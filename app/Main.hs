@@ -1,6 +1,6 @@
 module Main where
 
-import Language.Haskell.Format as Format
+import qualified Language.Haskell.Format as Format
 import System.Environment
 
 main :: IO ()

@@ -7,26 +7,36 @@ module Language.Haskell.Format.Module
 import Data.Monoid ((<>))
 import Language.Haskell.Exts hiding (name)
 import Language.Haskell.Format.Internal as Format
+import Language.Haskell.Format.Types
 import Prelude hiding (head)
 
-full :: (Module SrcSpanInfo, [Comment]) -> Format
-full (Module info head' pragmas imports declarations, comments)
+full :: Module CommentedSrc -> Format
+full (Module _ head' pragmas imports declarations)
   | format == mempty = mempty
   | otherwise = format <> newLine
   where
     format = Format.intercalate newLine
-      [ head head'
-      , mconcat $ map import' imports
+      [ Format.intercalate newLine (map pragma pragmas)
+      , head head'
+      , Format.intercalate newLine (map import' imports)
+      , Format.intercalate newLine (map declaration declarations)
       ]
+full _ = error "xml not supported"
 
-head :: Maybe (ModuleHead SrcSpanInfo) -> Format
+pragma :: ModulePragma CommentedSrc -> Format
+pragma = undefined
+
+head :: Maybe (ModuleHead CommentedSrc) -> Format
 head Nothing = ""
-head (Just (ModuleHead _ name' _ exports)) =
+head (Just (ModuleHead _ name' _ _)) =
   "module " <> name name' <> " where"
 
-name :: ModuleName SrcSpanInfo -> Format
+name :: ModuleName CommentedSrc -> Format
 name (ModuleName _ name') = Format.fromString name'
 
-import' :: ImportDecl SrcSpanInfo -> Format
+import' :: ImportDecl CommentedSrc -> Format
 import' ImportDecl { importModule } =
   "import " <> name importModule
+
+declaration :: Decl CommentedSrc -> Format
+declaration = undefined

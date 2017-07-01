@@ -1,8 +1,7 @@
 import Test.Hspec
 
-import Language.Haskell.Format as Format
+import qualified Language.Haskell.Format as Format
 import System.Directory
-import System.IO
 
 main :: IO ()
 main = hspec $

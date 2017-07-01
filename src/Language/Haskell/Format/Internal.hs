@@ -27,5 +27,5 @@ intercalate f (x1:x2:xs)
   | x1 == mempty = intercalate f (x2:xs)
   | x2 == mempty = intercalate f (x1:xs)
   | otherwise = x1 <> f <> intercalate f (x2:xs)
-intercalate f [x]        = x
-intercalate f []         = ""
+intercalate _ [x]        = x
+intercalate _ []         = ""
