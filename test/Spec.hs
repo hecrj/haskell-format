@@ -1,12 +1,13 @@
 import Test.Hspec
 
 import qualified Language.Haskell.Format as Format
+import qualified Data.List as List
 import System.Directory
 
 main :: IO ()
 main = hspec $
   describe "Specifications" $
-    runIO (listDirectory specsDir) >>= mapM_ testSpec
+    runIO (listDirectory specsDir) >>= mapM_ testSpec . List.sort
 
 specsDir :: String
 specsDir = "test/specs"
