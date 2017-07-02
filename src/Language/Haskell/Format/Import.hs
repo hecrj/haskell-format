@@ -16,12 +16,23 @@ decl ImportDecl { importQualified, importModule, importAs = as, importSpecs = sp
     , if importQualified then "qualified" else ""
     , Atom.moduleName importModule
     , maybe "" ((<>) "as " . Atom.moduleName) as
-    , maybe "" specList specs
-    ]
+    ] <> specsSeparator <>maybe "" specList specs
+  where
+    specsSeparator =
+      case specs of
+        Just (ImportSpecList src _ _) ->
+          if takesOneLine src then " " else newLine
+        _ ->
+          ""
 
 specList :: ImportSpecList CommentedSrc -> Format
-specList (ImportSpecList _ _ specs) =
-  "(" <> Format.intercalate ", " (map spec specs) <> ")"
+specList (ImportSpecList src _ specs)
+  | takesOneLine src =
+      "(" <> Format.intercalate ", " (map spec specs) <> ")"
+
+  | otherwise =
+      Format.indent $
+        Format.wrap "( " (newLine <> ")") (newLine <> ", ") (map spec specs)
 
 spec :: ImportSpec CommentedSrc -> Format
 spec (IVar _ name) = Atom.name name

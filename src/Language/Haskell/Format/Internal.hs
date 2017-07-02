@@ -5,6 +5,8 @@ module Language.Haskell.Format.Internal
   , Language.Haskell.Format.Internal.fromString
   , toString
   , intercalate
+  , wrap
+  , indent
   , (<>)
   ) where
 
@@ -16,6 +18,9 @@ type Format = Builder
 
 newLine :: Format
 newLine = "\n"
+
+indentation :: Format
+indentation = "  "
 
 fromString :: String -> Format
 fromString = Builder.fromString
@@ -30,3 +35,11 @@ intercalate f (x1:x2:xs)
   | otherwise = x1 <> f <> intercalate f (x2:xs)
 intercalate _ [x]        = x
 intercalate _ []         = ""
+
+wrap :: Format -> Format -> Format -> [Format] -> Format
+wrap start end separator elems =
+  start <> intercalate separator elems <> end
+
+indent :: Format -> Format
+indent =
+  intercalate "\n" . map ((<>) indentation . Builder.fromLazyText) . Text.splitOn "\n" . Builder.toLazyText
