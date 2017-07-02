@@ -16,7 +16,7 @@ decl ImportDecl { importQualified, importModule, importAs = as, importSpecs = sp
     , if importQualified then "qualified" else ""
     , Atom.moduleName importModule
     , maybe "" ((<>) "as " . Atom.moduleName) as
-    ] <> specsSeparator <>maybe "" specList specs
+    ] <> specsSeparator <> maybe "" specList specs
   where
     specsSeparator =
       case specs of
@@ -38,5 +38,5 @@ spec :: ImportSpec CommentedSrc -> Format
 spec (IVar _ name) = Atom.name name
 spec (IAbs _ _ name) = Atom.name name
 spec (IThingAll _ name) = Atom.name name <> "(..)"
-spec (IThingWith _ name cnames) = Atom.name name <> "(" <>
-  Format.intercalate ", " (map Atom.cname cnames) <> ")"
+spec (IThingWith _ name cnames) =
+  Atom.name name <> Format.wrap "(" ")" ", " (map Atom.cname cnames)

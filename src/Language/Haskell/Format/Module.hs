@@ -6,7 +6,7 @@ module Language.Haskell.Format.Module
   ) where
 
 import Language.Haskell.Exts hiding (name)
-import Language.Haskell.Format.Atom as Atom
+import qualified Language.Haskell.Format.Atom as Atom
 import Language.Haskell.Format.Import as Import
 import Language.Haskell.Format.Internal as Format
 import Language.Haskell.Format.Types
@@ -30,8 +30,24 @@ pragma = undefined
 
 head :: Maybe (ModuleHead CommentedSrc) -> Format
 head Nothing = ""
-head (Just (ModuleHead _ name' _ _)) =
-  "module " <> Atom.moduleName name' <> " where"
+head (Just (ModuleHead _ name' _ specList)) =
+  "module "
+    <> Atom.moduleName name'
+    <> maybe "" ((<>) newLine . exportSpecList) specList
+    <> " where"
+
+exportSpecList :: ExportSpecList CommentedSrc -> Format
+exportSpecList (ExportSpecList _ specs) =
+    Format.indent $
+      Format.wrap "( " (newLine <> ")") (newLine <> ", ") (map exportSpec specs)
+
+exportSpec :: ExportSpec CommentedSrc -> Format
+exportSpec (EVar _ qname) = Atom.qname qname
+exportSpec (EAbs _ _ qname) = Atom.qname qname
+exportSpec (EThingWith _ _ qname cnames) =
+  Atom.qname qname <> " " <> Format.wrap "(" ")" ", " (map Atom.cname cnames)
+exportSpec (EModuleContents _ moduleName) =
+  "module " <> Atom.moduleName moduleName
 
 declaration :: Decl CommentedSrc -> Format
 declaration = undefined
