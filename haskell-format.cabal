@@ -16,7 +16,9 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Language.Haskell.Format
-  other-modules:       Language.Haskell.Format.Internal
+  other-modules:       Language.Haskell.Format.Atom
+                     , Language.Haskell.Format.Internal
+                     , Language.Haskell.Format.Import
                      , Language.Haskell.Format.Module
                      , Language.Haskell.Format.Types
   ghc-options:         -Wall -Werror

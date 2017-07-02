@@ -10,5 +10,5 @@ file :: FilePath -> IO String
 file filepath = do
   result <- parseFileWithComments defaultParseMode filepath
   case result of
-    ParseOk ast       -> return $ Format.toString (Module.full (associateHaddock ast))
+    ParseOk ast       -> return $ Format.toString (Module.decl (associateHaddock ast))
     ParseFailed _ err -> return err

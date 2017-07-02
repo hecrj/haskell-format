@@ -5,6 +5,7 @@ module Language.Haskell.Format.Internal
   , Language.Haskell.Format.Internal.fromString
   , toString
   , intercalate
+  , (<>)
   ) where
 
 import Data.Monoid ((<>))
