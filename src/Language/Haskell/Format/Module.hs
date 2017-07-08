@@ -19,9 +19,11 @@ decl (Module _ head' pragmas imports declarations)
   where
     format = Format.intercalate newLine
       [ Format.intercalate newLine (map pragma pragmas)
-      , head head'
-      , Format.intercalate newLine (map Import.decl imports)
-      , Format.intercalate newLine (map declaration declarations)
+      , Format.intercalate (newLine <> newLine)
+        [ head head'
+        , Format.intercalate newLine (map Import.decl imports)
+        , Format.intercalate newLine (map declaration declarations)
+        ]
       ]
 decl _ = error "xml not supported"
 
@@ -50,4 +52,46 @@ exportSpec (EModuleContents _ moduleName) =
   "module " <> Atom.moduleName moduleName
 
 declaration :: Decl CommentedSrc -> Format
-declaration = undefined
+declaration (TypeSig _ names type') =
+  Format.intercalate ", " (map Atom.name names)
+    <> " :: "
+    <> Atom.type' type'
+
+declaration (PatBind _ pattern' rhs' _) =
+  Format.intercalate separator
+    [ pat pattern'
+    , rhs rhs'
+    ]
+  where
+    separator = case rhs' of
+      UnGuardedRhs _ _ -> " "
+      GuardedRhss _ _  -> newLine
+
+declaration d = Format.fromString (show d)
+
+pat :: Pat CommentedSrc -> Format
+pat (PVar _ name) = Atom.name name
+pat p             = Format.fromString (show p)
+
+rhs :: Rhs CommentedSrc -> Format
+rhs (UnGuardedRhs _ expression') =
+  Format.intercalate newLine
+    [ "="
+    , Format.indent (expression expression')
+    ]
+
+rhs s = Format.fromString (show s)
+
+
+expression :: Exp CommentedSrc -> Format
+expression (App _ e1 e2) =
+  expression e1 <> " " <> expression e2
+
+expression (Var _ qname) = Atom.qname qname
+expression (Lit _ literal') = literal literal'
+
+expression e = Format.fromString (show e)
+
+literal :: Literal CommentedSrc -> Format
+literal (String _ s _) = "\"" <> Format.fromString s <> "\""
+literal l              = Format.fromString (show l)

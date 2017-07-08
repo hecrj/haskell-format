@@ -4,6 +4,7 @@ module Language.Haskell.Format.Atom
   , name
   , cname
   , qname
+  , type'
   ) where
 
 import Language.Haskell.Exts hiding (name)
@@ -30,6 +31,11 @@ specialCon :: SpecialCon CommentedSrc -> Format
 specialCon (UnitCon _)          = "()"
 specialCon (ListCon _)          = "[]"
 specialCon (FunCon _)           = "->"
-specialCon (TupleCon _ _ _)     = "(,)"
+specialCon TupleCon {}          = "(,)"
 specialCon (Cons _)             = "(:)"
 specialCon (UnboxedSingleCon _) = "(# #)"
+
+type' :: Type CommentedSrc -> Format
+type' (TyApp _ t1 t2)  = type' t1 <> " " <> type' t2
+type' (TyCon _ qname') = qname qname'
+type' t                = Format.fromString (show t)
