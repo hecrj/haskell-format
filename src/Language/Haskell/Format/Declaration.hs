@@ -51,8 +51,9 @@ rhs s = Format.fromString (show s)
 
 
 expression :: Exp CommentedSrc -> Format
-expression (App _ e1 e2) =
-  expression e1 <> " " <> expression e2
+expression (App src e1 e2)
+  | takesOneLine src = expression e1 <> " " <> expression e2
+  | otherwise = expression e1 <> newLine <> Format.indent (expression e2)
 
 expression (Var _ qname) = Atom.qname qname
 expression (Lit _ literal') = literal literal'
