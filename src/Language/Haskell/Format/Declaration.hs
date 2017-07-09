@@ -56,7 +56,9 @@ expression (App _ e1 e2) =
 
 expression (Var _ qname) = Atom.qname qname
 expression (Lit _ literal') = literal literal'
-expression (List _ elements) = Format.wrap "[ " " ]" ", " (map expression elements)
+expression (List src elements)
+  | takesOneLine src = Format.wrap "[ " " ]" ", " (map expression elements)
+  | otherwise = Format.wrap "[ " (newLine <> "]") (newLine <> ", ") (map expression elements)
 
 expression e = Format.fromString (show e)
 
