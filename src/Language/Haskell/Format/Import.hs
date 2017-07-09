@@ -1,7 +1,7 @@
 {-# LANGUAGE NamedFieldPuns    #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Language.Haskell.Format.Import
-  ( decl
+  ( format
   ) where
 
 import Language.Haskell.Exts hiding (name)
@@ -9,8 +9,8 @@ import qualified Language.Haskell.Format.Atom as Atom
 import Language.Haskell.Format.Internal as Format
 import Language.Haskell.Format.Types
 
-decl :: ImportDecl CommentedSrc -> Format
-decl ImportDecl { importQualified, importModule, importAs = as, importSpecs = specs } =
+format :: ImportDecl CommentedSrc -> Format
+format ImportDecl { importQualified, importModule, importAs = as, importSpecs = specs } =
   Format.intercalate " "
     [ "import"
     , if importQualified then "qualified" else ""

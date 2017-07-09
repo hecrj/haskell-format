@@ -17,6 +17,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Language.Haskell.Format
   other-modules:       Language.Haskell.Format.Atom
+                     , Language.Haskell.Format.Declaration
                      , Language.Haskell.Format.Internal
                      , Language.Haskell.Format.Import
                      , Language.Haskell.Format.Module

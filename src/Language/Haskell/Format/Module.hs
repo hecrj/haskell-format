@@ -2,30 +2,34 @@
 {-# LANGUAGE NamedFieldPuns           #-}
 {-# LANGUAGE OverloadedStrings        #-}
 module Language.Haskell.Format.Module
-  ( Language.Haskell.Format.Module.decl
+  ( Language.Haskell.Format.Module.format
   ) where
 
 import Language.Haskell.Exts hiding (name)
 import qualified Language.Haskell.Format.Atom as Atom
+import qualified Language.Haskell.Format.Declaration as Declaration
 import Language.Haskell.Format.Import as Import
 import Language.Haskell.Format.Internal as Format
 import Language.Haskell.Format.Types
 import Prelude hiding (head)
 
-decl :: Module CommentedSrc -> Format
-decl (Module _ head' pragmas imports declarations)
-  | format == mempty = mempty
-  | otherwise = format <> newLine
+format :: Module CommentedSrc -> Format
+format (Module _ head' pragmas imports declarations)
+  | result == mempty = mempty
+  | otherwise = result <> newLine
   where
-    format = Format.intercalate newLine
+    result = Format.intercalate newLine
       [ Format.intercalate newLine (map pragma pragmas)
       , Format.intercalate (newLine <> newLine)
         [ head head'
-        , Format.intercalate newLine (map Import.decl imports)
-        , Format.intercalate newLine (map declaration declarations)
+        , Format.intercalate newLine (map Import.format imports)
+        , Format.intercalate
+            (newLine <> newLine <> newLine)
+            (map (Format.intercalate newLine . map Declaration.format) (Declaration.group declarations))
         ]
       ]
-decl _ = error "xml not supported"
+
+format _ = error "xml not supported"
 
 pragma :: ModulePragma CommentedSrc -> Format
 pragma = undefined
@@ -50,48 +54,3 @@ exportSpec (EThingWith _ _ qname cnames) =
   Atom.qname qname <> " " <> Format.wrap "(" ")" ", " (map Atom.cname cnames)
 exportSpec (EModuleContents _ moduleName) =
   "module " <> Atom.moduleName moduleName
-
-declaration :: Decl CommentedSrc -> Format
-declaration (TypeSig _ names type') =
-  Format.intercalate ", " (map Atom.name names)
-    <> " :: "
-    <> Atom.type' type'
-
-declaration (PatBind _ pattern' rhs' _) =
-  Format.intercalate separator
-    [ pat pattern'
-    , rhs rhs'
-    ]
-  where
-    separator = case rhs' of
-      UnGuardedRhs _ _ -> " "
-      GuardedRhss _ _  -> newLine
-
-declaration d = Format.fromString (show d)
-
-pat :: Pat CommentedSrc -> Format
-pat (PVar _ name) = Atom.name name
-pat p             = Format.fromString (show p)
-
-rhs :: Rhs CommentedSrc -> Format
-rhs (UnGuardedRhs _ expression') =
-  Format.intercalate newLine
-    [ "="
-    , Format.indent (expression expression')
-    ]
-
-rhs s = Format.fromString (show s)
-
-
-expression :: Exp CommentedSrc -> Format
-expression (App _ e1 e2) =
-  expression e1 <> " " <> expression e2
-
-expression (Var _ qname) = Atom.qname qname
-expression (Lit _ literal') = literal literal'
-
-expression e = Format.fromString (show e)
-
-literal :: Literal CommentedSrc -> Format
-literal (String _ s _) = "\"" <> Format.fromString s <> "\""
-literal l              = Format.fromString (show l)

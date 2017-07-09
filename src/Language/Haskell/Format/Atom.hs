@@ -38,4 +38,5 @@ specialCon (UnboxedSingleCon _) = "(# #)"
 type' :: Type CommentedSrc -> Format
 type' (TyApp _ t1 t2)  = type' t1 <> " " <> type' t2
 type' (TyCon _ qname') = qname qname'
+type' (TyList _ t)     = "[" <> type' t <> "]"
 type' t                = Format.fromString (show t)
