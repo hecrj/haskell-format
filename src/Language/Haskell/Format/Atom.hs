@@ -4,6 +4,7 @@ module Language.Haskell.Format.Atom
   , name
   , cname
   , qname
+  , qop
   , type'
   ) where
 
@@ -26,6 +27,10 @@ qname :: QName CommentedSrc -> Format
 qname (Qual _ moduleName' name') = moduleName moduleName' <> "." <> name name'
 qname (UnQual _ name')           = name name'
 qname (Special _ specialCon')    = specialCon specialCon'
+
+qop :: QOp CommentedSrc -> Format
+qop (QVarOp _ qname') = qname qname'
+qop (QConOp _ qname') = qname qname'
 
 specialCon :: SpecialCon CommentedSrc -> Format
 specialCon (UnitCon _)          = "()"

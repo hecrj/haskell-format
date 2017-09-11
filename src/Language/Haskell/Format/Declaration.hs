@@ -60,9 +60,16 @@ expression (Lit _ literal') = literal literal'
 expression (List src elements)
   | takesOneLine src = Format.wrap "[ " " ]" ", " (map expression elements)
   | otherwise = Format.wrap "[ " (newLine <> "]") (newLine <> ", ") (map expression elements)
+expression (InfixApp _ left qop right) =
+  Format.intercalate " "
+    [ expression left
+    , Atom.qop qop
+    , expression right
+    ]
 
 expression e = Format.fromString (show e)
 
 literal :: Literal CommentedSrc -> Format
 literal (String _ s _) = "\"" <> Format.fromString s <> "\""
+literal (Int _ _ s)    = Format.fromString s
 literal l              = Format.fromString (show l)
