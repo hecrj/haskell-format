@@ -1,5 +1,5 @@
 module Test
-  ( z
-  , x
-  , y
-  ) where
+    ( z
+    , x
+    , y
+    ) where

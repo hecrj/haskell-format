@@ -23,7 +23,7 @@ newLine :: Format
 newLine = "\n"
 
 indentation :: Format
-indentation = "  "
+indentation = "    "
 
 fromString :: String -> Format
 fromString = Builder.fromString

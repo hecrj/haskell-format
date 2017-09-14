@@ -1,7 +1,7 @@
 import System.Environment
-  ( getEnv
-  , getArgs
-  , getProgName
-  , getExecutablePath
-  , getEnvironment
-  )
+    ( getEnv
+    , getArgs
+    , getProgName
+    , getExecutablePath
+    , getEnvironment
+    )
