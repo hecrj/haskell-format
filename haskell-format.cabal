@@ -1,52 +1,57 @@
-name:                haskell-format
-version:             0.1.0.0
--- synopsis:
--- description:
-homepage:            https://github.com/githubuser/haskell-format#readme
-license:             BSD3
-license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2017 Author name here
-category:            Web
-build-type:          Simple
-extra-source-files:  README.md
-cabal-version:       >=1.10
-
-library
-  hs-source-dirs:      src
-  exposed-modules:     Language.Haskell.Format
-  other-modules:       Language.Haskell.Format.Atom
-                     , Language.Haskell.Format.Declaration
-                     , Language.Haskell.Format.Internal
-                     , Language.Haskell.Format.Import
-                     , Language.Haskell.Format.Module
-                     , Language.Haskell.Format.Types
-  ghc-options:         -Wall -Werror
-  build-depends:       base >= 4.7 && < 5
-                     , haskell-src-exts
-                     , text
-  default-language:    Haskell2010
-
-executable haskell-format
-  hs-source-dirs:      app
-  main-is:             Main.hs
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall -Werror
-  build-depends:       base
-                     , haskell-format
-  default-language:    Haskell2010
-
-test-suite haskell-format-test
-  type:                exitcode-stdio-1.0
-  hs-source-dirs:      test
-  main-is:             Spec.hs
-  build-depends:       base
-                     , haskell-format
-                     , hspec
-                     , directory
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall -Werror
-  default-language:    Haskell2010
+name: haskell-format
+version: 0.1.0.0
+cabal-version: >=1.10
+build-type: Simple
+license: BSD3
+license-file: LICENSE
+copyright: 2017 Author name here
+maintainer: example@example.com
+homepage: https://github.com/githubuser/haskell-format#readme
+category: Web
+author: Author name here
+extra-source-files:
+    README.md
 
 source-repository head
-  type:     git
-  location: https://github.com/githubuser/haskell-format
+    type: git
+    location: https://github.com/githubuser/haskell-format
+
+library
+    exposed-modules:
+        Language.Haskell.Format
+    build-depends:
+        base >=4.7 && <5,
+        haskell-src-exts -any,
+        text -any
+    default-language: Haskell2010
+    hs-source-dirs: src
+    other-modules:
+        Language.Haskell.Format.Atom
+        Language.Haskell.Format.Declaration
+        Language.Haskell.Format.Internal
+        Language.Haskell.Format.Import
+        Language.Haskell.Format.Module
+        Language.Haskell.Format.Nested
+        Language.Haskell.Format.Types
+    ghc-options: -Wall -Werror
+
+executable haskell-format
+    main-is: Main.hs
+    build-depends:
+        base -any,
+        haskell-format -any
+    default-language: Haskell2010
+    hs-source-dirs: app
+    ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall -Werror
+
+test-suite haskell-format-test
+    type: exitcode-stdio-1.0
+    main-is: Spec.hs
+    build-depends:
+        base -any,
+        haskell-format -any,
+        hspec -any,
+        directory -any
+    default-language: Haskell2010
+    hs-source-dirs: test
+    ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall -Werror

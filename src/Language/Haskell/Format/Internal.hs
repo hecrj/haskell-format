@@ -4,10 +4,11 @@ module Language.Haskell.Format.Internal
   , newLine
   , Language.Haskell.Format.Internal.fromString
   , toString
+  , Language.Haskell.Format.Internal.length
   , intercalate
   , wrap
   , indent
-  , nest
+  , lines
   , (<>)
   ) where
 
@@ -30,6 +31,9 @@ fromString = Builder.fromString
 toString :: Format -> String
 toString = Text.unpack . Builder.toLazyText
 
+length :: Format -> Int
+length = fromIntegral . Text.length . Builder.toLazyText
+
 intercalate :: Format -> [Format] -> Format
 intercalate f (x1:x2:xs)
   | x1 == mempty = intercalate f (x2:xs)
@@ -45,16 +49,6 @@ wrap start end separator elems =
 indent :: Format -> Format
 indent =
   intercalate "\n" . map (indentation <>) . lines
-
-nest :: Format -> Format -> Format
-nest heading target =
-  intercalate "\n" (firstLine : paddedLines)
-  where
-    (x1:xs) = lines target
-    firstLine = heading <> " " <> x1
-    paddedLines = map (padding <>) xs
-    padding = Builder.fromLazyText $ Text.replicate depth " "
-    depth = Text.length (Builder.toLazyText heading) + 1
 
 lines :: Format -> [Format]
 lines =

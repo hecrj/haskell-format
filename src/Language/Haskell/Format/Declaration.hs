@@ -8,6 +8,7 @@ import qualified Data.List as List
 import Language.Haskell.Exts hiding (name)
 import qualified Language.Haskell.Format.Atom as Atom
 import Language.Haskell.Format.Internal as Format
+import qualified Language.Haskell.Format.Nested as Nested
 import Language.Haskell.Format.Types
 
 group :: [Decl CommentedSrc] -> [[Decl CommentedSrc]]
@@ -85,7 +86,7 @@ expression (InfixApp src left qop right)
     ]
   | otherwise =
     expression left <> newLine <>
-      Format.indent (Format.nest (Atom.qop qop) (expression right))
+      Format.indent (Nested.qop qop (expression right))
 
 expression e = Format.fromString (show e)
 
