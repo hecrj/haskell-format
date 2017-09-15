@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Language.Haskell.Format.Nested
   ( qop
+  , if_
   ) where
 
 import Language.Haskell.Exts
@@ -10,6 +11,9 @@ import Language.Haskell.Format.Types
 
 qop :: QOp CommentedSrc -> Format -> Format
 qop qop' = nest (Atom.qop qop')
+
+if_ :: Format -> Format
+if_ = nest "if"
 
 nest :: Format -> Format -> Format
 nest anchor target =

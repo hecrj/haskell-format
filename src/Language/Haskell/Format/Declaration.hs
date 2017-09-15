@@ -87,15 +87,31 @@ expression (InfixApp src left qop right)
   | otherwise =
     expression left <> newLine <>
       Format.indent (Nested.qop qop (expression right))
-expression (If _ cond then_ else_) =
-  Format.intercalate " "
-    [ "if"
-    , expression cond
-    , "then"
-    , expression then_
-    , "else"
-    , expression else_
-    ]
+expression (If src cond then_ else_)
+  | takesOneLine src =
+    Format.intercalate " "
+      [ "if"
+      , expression cond
+      , "then"
+      , expression then_
+      , "else"
+      , expression else_
+      ]
+  | otherwise =
+    Format.intercalate "\n" $
+      ifThen
+        ++ [ Format.indent (expression then_)
+           , "else"
+           , Format.indent (expression else_)
+           ]
+  where
+    ifThen
+      | takesOneLine (ann cond) =
+        [ Format.intercalate " " [ "if", expression cond, "then" ] ]
+      | otherwise =
+        [ Nested.if_ (expression cond)
+        , "then"
+        ]
 
 expression e = Format.fromString (show e)
 
