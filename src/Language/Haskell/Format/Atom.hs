@@ -48,7 +48,7 @@ type' (TyFun src t1 t2)
   | takesOneLine src =
     type' t1 <> " -> " <> type' t2
   | otherwise =
-    Format.intercalate "\n"
+    Format.intercalate newLine
       [ type' t1
       , "-> " <> type' t2
       ]

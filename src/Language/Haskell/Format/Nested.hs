@@ -17,7 +17,7 @@ if_ = nest "if"
 
 nest :: Format -> Format -> Format
 nest anchor target =
-  Format.intercalate "\n" (firstLine : paddedLines)
+  Format.intercalate newLine (firstLine : paddedLines)
   where
     (x1:xs) = Format.lines target
     firstLine = anchor <> " " <> x1

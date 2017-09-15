@@ -26,7 +26,7 @@ format (TypeSig _ names type')
   | takesOneLine (ann type') =
       typeNames <> " :: " <> Atom.type' type'
   | otherwise =
-      Format.intercalate "\n"
+      Format.intercalate newLine
         [ typeNames <> " ::"
         , Format.indent (Atom.type' type')
         ]
@@ -104,7 +104,7 @@ expression (If src cond then_ else_)
       , expression else_
       ]
   | otherwise =
-    Format.intercalate "\n" $
+    Format.intercalate newLine $
       ifThen
         ++ [ Format.indent (expression then_)
            , "else"

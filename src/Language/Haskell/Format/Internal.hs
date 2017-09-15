@@ -48,7 +48,7 @@ wrap start end separator elems =
 
 indent :: Format -> Format
 indent =
-  intercalate "\n" . map (indentation <>) . lines
+  intercalate newLine . map (indentation <>) . lines
 
 lines :: Format -> [Format]
 lines =
