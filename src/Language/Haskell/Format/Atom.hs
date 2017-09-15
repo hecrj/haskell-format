@@ -44,5 +44,12 @@ type' :: Type CommentedSrc -> Format
 type' (TyApp _ t1 t2)  = type' t1 <> " " <> type' t2
 type' (TyCon _ qname') = qname qname'
 type' (TyList _ t)     = "[" <> type' t <> "]"
-type' (TyFun _ t1 t2)  = type' t1 <> " -> " <> type' t2
+type' (TyFun src t1 t2)
+  | takesOneLine src =
+    type' t1 <> " -> " <> type' t2
+  | otherwise =
+    Format.intercalate "\n"
+      [ type' t1
+      , "-> " <> type' t2
+      ]
 type' t                = Format.fromString (show t)

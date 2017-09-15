@@ -15,4 +15,4 @@ testMultilineCondition n =
     then
         putStrLn "n > 10 and even"
     else
-        putStrLn "n >= 10 or odd"
+        putStrLn "n <= 10 or odd"

@@ -22,10 +22,16 @@ group =
     signatureBinding _ _                 = False
 
 format :: Decl CommentedSrc -> Format
-format (TypeSig _ names type') =
-  Format.intercalate ", " (map Atom.name names)
-    <> " :: "
-    <> Atom.type' type'
+format (TypeSig _ names type')
+  | takesOneLine (ann type') =
+      typeNames <> " :: " <> Atom.type' type'
+  | otherwise =
+      Format.intercalate "\n"
+        [ typeNames <> " ::"
+        , Format.indent (Atom.type' type')
+        ]
+  where
+    typeNames = Format.intercalate ", " (map Atom.name names)
 
 format (PatBind _ pattern' rhs' _) =
   Format.intercalate separator
