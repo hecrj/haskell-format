@@ -126,12 +126,18 @@ expression (Case _ target alts) =
     , Format.indent cases
     ]
   where
-    caseOf =
-      Format.intercalate " "
-        [ "case"
-        , expression target
-        , "of"
-        ]
+    caseOf
+      | takesOneLine (ann target) =
+        Format.intercalate " "
+          [ "case"
+          , expression target
+          , "of"
+          ]
+      | otherwise =
+        Format.intercalate newLine
+          [ Nested.case_ (expression target)
+          , "of"
+          ]
 
     cases =
       Format.intercalate (newLine <> newLine) (map alt alts)

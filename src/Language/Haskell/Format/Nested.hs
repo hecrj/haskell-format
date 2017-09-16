@@ -2,6 +2,7 @@
 module Language.Haskell.Format.Nested
   ( qop
   , if_
+  , case_
   ) where
 
 import Language.Haskell.Exts
@@ -14,6 +15,9 @@ qop qop' = nest (Atom.qop qop')
 
 if_ :: Format -> Format
 if_ = nest "if"
+
+case_ :: Format -> Format
+case_ = nest "case"
 
 nest :: Format -> Format -> Format
 nest anchor target =
