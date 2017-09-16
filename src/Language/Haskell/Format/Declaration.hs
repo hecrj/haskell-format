@@ -5,7 +5,7 @@ module Language.Haskell.Format.Declaration
   ) where
 
 import qualified Data.List as List
-import Language.Haskell.Exts hiding (name)
+import Language.Haskell.Exts hiding (alt, name)
 import qualified Language.Haskell.Format.Atom as Atom
 import Language.Haskell.Format.Internal as Format
 import qualified Language.Haskell.Format.Nested as Nested
@@ -50,9 +50,11 @@ format (FunBind _ matches) =
 format d = Format.fromString (show d)
 
 pat :: Pat CommentedSrc -> Format
-pat (PVar _ name) = Atom.name name
-pat (PWildCard _) = "_"
-pat p             = Format.fromString (show p)
+pat (PVar _ name)             = Atom.name name
+pat (PWildCard _)             = "_"
+pat (PLit _ (Signless _) lit) = literal lit
+pat (PLit _ (Negative _) lit) = "-" <> literal lit
+pat p                         = Format.fromString (show p)
 
 match :: Match CommentedSrc -> Format
 match (Match _ name patterns rhs' _) =
@@ -118,6 +120,21 @@ expression (If src cond then_ else_)
         [ Nested.if_ (expression cond)
         , "then"
         ]
+expression (Case _ target alts) =
+  Format.intercalate newLine
+    [ caseOf
+    , Format.indent cases
+    ]
+  where
+    caseOf =
+      Format.intercalate " "
+        [ "case"
+        , expression target
+        , "of"
+        ]
+
+    cases =
+      Format.intercalate (newLine <> newLine) (map alt alts)
 
 expression e = Format.fromString (show e)
 
@@ -125,3 +142,13 @@ literal :: Literal CommentedSrc -> Format
 literal (String _ s _) = "\"" <> Format.fromString s <> "\""
 literal (Int _ _ s)    = Format.fromString s
 literal l              = Format.fromString (show l)
+
+alt :: Alt CommentedSrc -> Format
+alt (Alt _ pat_ (UnGuardedRhs _ expr) _) =
+  Format.intercalate newLine
+    [ pat pat_ <> " ->"
+    , Format.indent (expression expr)
+    ]
+
+alt a =
+  Format.fromString (show a)

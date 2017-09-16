@@ -12,6 +12,7 @@ module Language.Haskell.Format.Internal
   , (<>)
   ) where
 
+import qualified Data.List as List
 import Data.Monoid ((<>))
 import qualified Data.Text.Lazy as Text
 import Data.Text.Lazy.Builder as Builder
@@ -35,12 +36,8 @@ length :: Format -> Int
 length = fromIntegral . Text.length . Builder.toLazyText
 
 intercalate :: Format -> [Format] -> Format
-intercalate f (x1:x2:xs)
-  | x1 == mempty = intercalate f (x2:xs)
-  | x2 == mempty = intercalate f (x1:xs)
-  | otherwise = x1 <> f <> intercalate f (x2:xs)
-intercalate _ [x]        = x
-intercalate _ []         = ""
+intercalate f =
+  mconcat . List.intersperse f
 
 wrap :: Format -> Format -> Format -> [Format] -> Format
 wrap start end separator elems =
@@ -48,7 +45,10 @@ wrap start end separator elems =
 
 indent :: Format -> Format
 indent =
-  intercalate newLine . map (indentation <>) . lines
+  intercalate newLine . map indentUnlessEmpty . lines
+  where
+    indentUnlessEmpty ""   = ""
+    indentUnlessEmpty line = indentation <> line
 
 lines :: Format -> [Format]
 lines =

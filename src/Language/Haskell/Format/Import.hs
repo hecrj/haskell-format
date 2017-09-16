@@ -11,13 +11,15 @@ import Language.Haskell.Format.Types
 
 format :: ImportDecl CommentedSrc -> Format
 format ImportDecl { importQualified, importModule, importAs = as, importSpecs = specs } =
-  Format.intercalate " "
-    [ "import"
-    , if importQualified then "qualified" else ""
-    , Atom.moduleName importModule
-    , maybe "" ((<>) "as " . Atom.moduleName) as
-    ] <> specsSeparator <> maybe "" specList specs
+  importLine <> specsSeparator <> maybe "" specList specs
   where
+    importLine =
+      Format.intercalate " " $ filter (mempty /=)
+        [ "import"
+        , if importQualified then "qualified" else ""
+        , Atom.moduleName importModule
+        , maybe "" ((<>) "as " . Atom.moduleName) as
+        ]
     specsSeparator =
       case specs of
         Just (ImportSpecList src _ _) ->

@@ -18,16 +18,16 @@ format (Module _ head' pragmas imports declarations)
   | result == mempty = mempty
   | otherwise = result <> newLine
   where
-    result = Format.intercalate newLine
-      [ Format.intercalate newLine (map pragma pragmas)
-      , Format.intercalate (newLine <> newLine)
-        [ head head'
-        , Format.intercalate newLine (map Import.format imports)
-        , Format.intercalate
-            (newLine <> newLine <> newLine)
-            (map (Format.intercalate newLine . map Declaration.format) (Declaration.group declarations))
+    result = Format.intercalate newLine $ filter (mempty /=)
+        [ Format.intercalate newLine (map pragma pragmas)
+        , Format.intercalate (newLine <> newLine) $ filter (mempty /=)
+            [ head head'
+            , Format.intercalate newLine (map Import.format imports)
+            , Format.intercalate
+                (newLine <> newLine <> newLine)
+                (map (Format.intercalate newLine . map Declaration.format) (Declaration.group declarations))
+            ]
         ]
-      ]
 
 format _ = error "xml not supported"
 
