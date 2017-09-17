@@ -20,4 +20,10 @@ testSpec :: FilePath -> Spec
 testSpec dir =
   it dir $ do
     result <- readFile (specFile dir "output.hs")
-    Format.file (specFile dir "input.hs") `shouldReturn` result
+    Output <$> Format.file (specFile dir "input.hs")
+      `shouldReturn` Output result
+
+newtype Output = Output String deriving (Eq)
+
+instance Show Output where
+  show (Output s) = s

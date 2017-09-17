@@ -5,7 +5,7 @@ module Language.Haskell.Format.Declaration
   ) where
 
 import qualified Data.List as List
-import Language.Haskell.Exts hiding (alt, name)
+import Language.Haskell.Exts hiding (alt, binds, name)
 import qualified Language.Haskell.Format.Atom as Atom
 import qualified Language.Haskell.Format.Expression as Expression
 import Language.Haskell.Format.Internal as Format
@@ -44,12 +44,25 @@ format (FunBind _ matches) =
 format d = Format.fromString (show d)
 
 match :: Match CommentedSrc -> Format
-match (Match _ name patterns rhs_ _) =
+match (Match _ name patterns rhs_ maybeWhere) =
   Format.intercalate " "
-    [ Atom.name name
-    , Format.intercalate " " (map Pattern.format patterns)
-    ]
-    <> rhsInlined rhs_
+      [ Atom.name name
+      , Format.intercalate " " (map Pattern.format patterns)
+      ]
+      <> rhsInlined rhs_
+      <> whereClause
+  where
+    whereClause = case maybeWhere of
+      Nothing     ->
+        mempty
+
+      Just binds_ ->
+        newLine <> Format.indent
+          ( Format.intercalate newLine
+              [ "where"
+              , Format.indent (binds binds_)
+              ]
+          )
 
 match m = Format.fromString (show m)
 
@@ -74,3 +87,9 @@ guardedRhs (GuardedRhs _ [stmt] expression) =
     , Format.indent (Expression.format expression)
     ]
 guardedRhs g = Format.fromString (show g)
+
+binds :: Binds CommentedSrc -> Format
+binds (BDecls _ declarations) =
+  Format.intercalate (newLine <> newLine) (map format declarations)
+
+binds b = Format.fromString $ show b
