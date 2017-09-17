@@ -3,11 +3,13 @@ module Language.Haskell.Format.Nested
   ( qop
   , if_
   , case_
+  , pattern_
   ) where
 
 import Language.Haskell.Exts
 import qualified Language.Haskell.Format.Atom as Atom
 import Language.Haskell.Format.Internal as Format
+import qualified Language.Haskell.Format.Pattern as Pattern
 import Language.Haskell.Format.Types
 
 qop :: QOp CommentedSrc -> Format -> Format
@@ -18,6 +20,9 @@ if_ = nest "if"
 
 case_ :: Format -> Format
 case_ = nest "case"
+
+pattern_ :: Pat CommentedSrc -> Format -> Format
+pattern_ pat = nest (Pattern.format pat <> " |")
 
 nest :: Format -> Format -> Format
 nest anchor target =

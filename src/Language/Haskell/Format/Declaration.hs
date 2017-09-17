@@ -7,8 +7,9 @@ module Language.Haskell.Format.Declaration
 import qualified Data.List as List
 import Language.Haskell.Exts hiding (alt, name)
 import qualified Language.Haskell.Format.Atom as Atom
+import qualified Language.Haskell.Format.Expression as Expression
 import Language.Haskell.Format.Internal as Format
-import qualified Language.Haskell.Format.Nested as Nested
+import qualified Language.Haskell.Format.Pattern as Pattern
 import Language.Haskell.Format.Types
 
 group :: [Decl CommentedSrc] -> [[Decl CommentedSrc]]
@@ -33,15 +34,8 @@ format (TypeSig _ names type')
   where
     typeNames = Format.intercalate ", " (map Atom.name names)
 
-format (PatBind _ pattern' rhs' _) =
-  Format.intercalate separator
-    [ pat pattern'
-    , rhs rhs'
-    ]
-  where
-    separator = case rhs' of
-      UnGuardedRhs _ _ -> " "
-      GuardedRhss _ _  -> newLine
+format (PatBind _ pattern' rhs_ _) =
+  Pattern.format pattern' <> rhsInlined rhs_
 
 format (FunBind _ matches) =
   Format.intercalate newLine
@@ -49,112 +43,34 @@ format (FunBind _ matches) =
 
 format d = Format.fromString (show d)
 
-pat :: Pat CommentedSrc -> Format
-pat (PVar _ name)             = Atom.name name
-pat (PWildCard _)             = "_"
-pat (PLit _ (Signless _) lit) = literal lit
-pat (PLit _ (Negative _) lit) = "-" <> literal lit
-pat p                         = Format.fromString (show p)
-
 match :: Match CommentedSrc -> Format
-match (Match _ name patterns rhs' _) =
+match (Match _ name patterns rhs_ _) =
   Format.intercalate " "
     [ Atom.name name
-    , Format.intercalate " " (map pat patterns)
-    , rhs rhs'
+    , Format.intercalate " " (map Pattern.format patterns)
     ]
+    <> rhsInlined rhs_
+
 match m = Format.fromString (show m)
 
-rhs :: Rhs CommentedSrc -> Format
-rhs (UnGuardedRhs _ expression') =
-  Format.intercalate newLine
+rhsInlined :: Rhs CommentedSrc -> Format
+rhsInlined (UnGuardedRhs _ expression) =
+  " " <> Format.intercalate newLine
     [ "="
-    , Format.indent (expression expression')
+    , Format.indent (Expression.format expression)
     ]
+rhsInlined (GuardedRhss _ guardedRhss) =
+  newLine <>
+    Format.indent (Format.intercalate newLine (map guardedRhs guardedRhss))
 
-rhs s = Format.fromString (show s)
-
-
-expression :: Exp CommentedSrc -> Format
-expression (Var _ qname) = Atom.qname qname
-expression (Con _ qname) = Atom.qname qname
-expression (Lit _ literal') = literal literal'
-expression (App src e1 e2)
-  | takesOneLine src = expression e1 <> " " <> expression e2
-  | otherwise = expression e1 <> newLine <> Format.indent (expression e2)
-expression (List _ []) = "[]"
-expression (List src elements)
-  | takesOneLine src = Format.wrap "[ " " ]" ", " (map expression elements)
-  | otherwise = Format.wrap "[ " (newLine <> "]") (newLine <> ", ") (map expression elements)
-expression (InfixApp src left qop right)
-  | takesOneLine src = Format.intercalate " "
-    [ expression left
-    , Atom.qop qop
-    , expression right
-    ]
-  | otherwise =
-    expression left <> newLine <>
-      Format.indent (Nested.qop qop (expression right))
-expression (If src cond then_ else_)
-  | takesOneLine src =
-    Format.intercalate " "
-      [ "if"
-      , expression cond
-      , "then"
-      , expression then_
-      , "else"
-      , expression else_
+guardedRhs :: GuardedRhs CommentedSrc -> Format
+guardedRhs (GuardedRhs _ [stmt] expression) =
+  Format.intercalate newLine
+    [ Format.intercalate " "
+      [ "|"
+      , Expression.statement stmt
+      , "="
       ]
-  | otherwise =
-    Format.intercalate newLine $
-      ifThen
-        ++ [ Format.indent (expression then_)
-           , "else"
-           , Format.indent (expression else_)
-           ]
-  where
-    ifThen
-      | takesOneLine (ann cond) =
-        [ Format.intercalate " " [ "if", expression cond, "then" ] ]
-      | otherwise =
-        [ Nested.if_ (expression cond)
-        , "then"
-        ]
-expression (Case _ target alts) =
-  Format.intercalate newLine
-    [ caseOf
-    , Format.indent cases
+    , Format.indent (Expression.format expression)
     ]
-  where
-    caseOf
-      | takesOneLine (ann target) =
-        Format.intercalate " "
-          [ "case"
-          , expression target
-          , "of"
-          ]
-      | otherwise =
-        Format.intercalate newLine
-          [ Nested.case_ (expression target)
-          , "of"
-          ]
-
-    cases =
-      Format.intercalate (newLine <> newLine) (map alt alts)
-
-expression e = Format.fromString (show e)
-
-literal :: Literal CommentedSrc -> Format
-literal (String _ s _) = "\"" <> Format.fromString s <> "\""
-literal (Int _ _ s)    = Format.fromString s
-literal l              = Format.fromString (show l)
-
-alt :: Alt CommentedSrc -> Format
-alt (Alt _ pat_ (UnGuardedRhs _ expr) _) =
-  Format.intercalate newLine
-    [ pat pat_ <> " ->"
-    , Format.indent (expression expr)
-    ]
-
-alt a =
-  Format.fromString (show a)
+guardedRhs g = Format.fromString (show g)

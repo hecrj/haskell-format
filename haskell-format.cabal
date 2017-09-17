@@ -28,10 +28,13 @@ library
     other-modules:
         Language.Haskell.Format.Atom
         Language.Haskell.Format.Declaration
+        Language.Haskell.Format.Expression
         Language.Haskell.Format.Internal
         Language.Haskell.Format.Import
+        Language.Haskell.Format.Literal
         Language.Haskell.Format.Module
         Language.Haskell.Format.Nested
+        Language.Haskell.Format.Pattern
         Language.Haskell.Format.Types
     ghc-options: -Wall -Werror
 
