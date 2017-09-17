@@ -7,3 +7,9 @@ test a b =
   where
     addition = a + b
     subtraction = a - b
+
+main :: IO ()
+main =
+  output
+  where
+    output = test 1 2

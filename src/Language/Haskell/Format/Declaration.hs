@@ -34,8 +34,12 @@ format (TypeSig _ names type')
   where
     typeNames = Format.intercalate ", " (map Atom.name names)
 
-format (PatBind _ pattern' rhs_ _) =
-  Pattern.format pattern' <> rhsInlined rhs_
+format (PatBind _ pattern' rhs_ maybeWhere) =
+  mconcat
+    [ Pattern.format pattern'
+    , rhsInlined rhs_
+    , maybe mempty ((newLine <>) . Format.indent . where_) maybeWhere
+    ]
 
 format (FunBind _ matches) =
   Format.intercalate newLine
@@ -50,21 +54,16 @@ match (Match _ name patterns rhs_ maybeWhere) =
       , Format.intercalate " " (map Pattern.format patterns)
       ]
       <> rhsInlined rhs_
-      <> whereClause
-  where
-    whereClause = case maybeWhere of
-      Nothing     ->
-        mempty
-
-      Just binds_ ->
-        newLine <> Format.indent
-          ( Format.intercalate newLine
-              [ "where"
-              , Format.indent (binds binds_)
-              ]
-          )
+      <> maybe mempty ((newLine <>) . Format.indent . where_) maybeWhere
 
 match m = Format.fromString (show m)
+
+where_ :: Binds CommentedSrc -> Format
+where_ binds_ =
+  Format.intercalate newLine
+    [ "where"
+    , Format.indent (binds binds_)
+    ]
 
 rhsInlined :: Rhs CommentedSrc -> Format
 rhsInlined (UnGuardedRhs _ expression) =
