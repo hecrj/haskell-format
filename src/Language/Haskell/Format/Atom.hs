@@ -36,8 +36,8 @@ specialCon :: SpecialCon CommentedSrc -> Format
 specialCon (UnitCon _)          = "()"
 specialCon (ListCon _)          = "[]"
 specialCon (FunCon _)           = "->"
-specialCon TupleCon {}          = "(,)"
-specialCon (Cons _)             = "(:)"
+specialCon TupleCon {}          = ","
+specialCon (Cons _)             = ":"
 specialCon (UnboxedSingleCon _) = "(# #)"
 
 type' :: Type CommentedSrc -> Format

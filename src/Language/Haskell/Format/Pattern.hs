@@ -14,4 +14,9 @@ format (PVar _ name_)            = Atom.name name_
 format (PWildCard _)             = "_"
 format (PLit _ (Signless _) lit) = Literal.format lit
 format (PLit _ (Negative _) lit) = "-" <> Literal.format lit
+format (PParen _ pattern_)       = mconcat [ "(", format pattern_, ")" ]
+format (PInfixApp _ left qname right) =
+  mconcat [ format left, Atom.qname qname, format right ]
+format (PList _ patterns) =
+  Format.wrap "[" "]" "," (map format patterns)
 format p                         = Format.fromString (show p)
