@@ -10,6 +10,7 @@ test a b =
 
 main :: IO ()
 main =
-  output
+  output 1
   where
-    output = test 1 2
+    output 0 = test 0 0
+    output a = test a 2

@@ -17,9 +17,7 @@ group =
   List.groupBy signatureBinding
   where
     signatureBinding TypeSig{} PatBind{} = True
-    signatureBinding PatBind{} PatBind{} = True
     signatureBinding TypeSig{} FunBind{} = True
-    signatureBinding FunBind{} FunBind{} = True
     signatureBinding _ _                 = False
 
 format :: Decl CommentedSrc -> Format
@@ -89,6 +87,7 @@ guardedRhs g = Format.fromString (show g)
 
 binds :: Binds CommentedSrc -> Format
 binds (BDecls _ declarations) =
-  Format.intercalate (newLine <> newLine) (map format declarations)
+  Format.intercalate (newLine <> newLine) $
+    map (Format.intercalate newLine . map format) (group declarations)
 
 binds b = Format.fromString $ show b
