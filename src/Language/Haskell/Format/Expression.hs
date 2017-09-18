@@ -79,9 +79,18 @@ format (Case _ target alts) =
     cases =
       Format.intercalate (newLine <> newLine) (map alt alts)
 
+format (Do _ statements) =
+  Nested.do_ $ Format.intercalate newLine (map statement statements)
+
 format e = Format.fromString (show e)
 
 statement :: Stmt CommentedSrc -> Format
+statement (Generator _ pattern_ expression) =
+  Format.intercalate " "
+    [ Pattern.format pattern_
+    , "<-"
+    , format expression
+    ]
 statement (Qualifier _ expression) =
   format expression
 statement s = Format.fromString (show s)

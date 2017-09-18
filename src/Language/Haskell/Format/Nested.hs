@@ -4,6 +4,7 @@ module Language.Haskell.Format.Nested
   , if_
   , case_
   , pattern_
+  , do_
   ) where
 
 import Language.Haskell.Exts
@@ -23,6 +24,9 @@ case_ = nest "case"
 
 pattern_ :: Pat CommentedSrc -> Format -> Format
 pattern_ pat = nest (Pattern.format pat <> " |")
+
+do_ :: Format -> Format
+do_ = nest "do"
 
 nest :: Format -> Format -> Format
 nest anchor target =
