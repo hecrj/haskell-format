@@ -5,6 +5,7 @@ module Language.Haskell.Format.Nested
   , case_
   , pattern_
   , do_
+  , generator
   ) where
 
 import Language.Haskell.Exts
@@ -27,6 +28,9 @@ pattern_ pat = nest (Pattern.format pat <> " |")
 
 do_ :: Format -> Format
 do_ = nest "do"
+
+generator :: Pat CommentedSrc -> Format -> Format
+generator pat = nest (Pattern.format pat <> " <-")
 
 nest :: Format -> Format -> Format
 nest anchor target =

@@ -86,11 +86,7 @@ format e = Format.fromString (show e)
 
 statement :: Stmt CommentedSrc -> Format
 statement (Generator _ pattern_ expression) =
-  Format.intercalate " "
-    [ Pattern.format pattern_
-    , "<-"
-    , format expression
-    ]
+  Nested.generator pattern_ (format expression)
 statement (Qualifier _ expression) =
   format expression
 statement s = Format.fromString (show s)
