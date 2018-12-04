@@ -6,8 +6,13 @@ import System.Directory
 
 main :: IO ()
 main = hspec $
-  describe "Specs" $
-    runIO (listDirectory specsDir) >>= mapM_ testSpec . List.sort
+  describe "Specs" $ do
+    describe "Format" $
+      runIO (listDirectory specsDir) >>= mapM_ testFormat . List.sort
+
+    describe "Idempotence" $
+      runIO (listDirectory specsDir) >>= mapM_ testIdempotence . List.sort
+
 
 specsDir :: String
 specsDir = "test/specs"
@@ -16,14 +21,16 @@ specFile :: FilePath -> FilePath -> FilePath
 specFile dir file =
   specsDir ++ "/" ++ dir ++ "/" ++ file
 
-testSpec :: FilePath -> Spec
-testSpec dir =
+testFormat :: FilePath -> Spec
+testFormat dir =
   it dir $ do
     result <- readFile (specFile dir "output.hs")
-    Output <$> Format.file (specFile dir "input.hs")
-      `shouldReturn` Output result
+    Format.file (specFile dir "input.hs")
+      `shouldReturn` result
 
-newtype Output = Output String deriving (Eq)
-
-instance Show Output where
-  show (Output s) = s
+testIdempotence :: FilePath -> Spec
+testIdempotence dir =
+  it dir $ do
+    result <- readFile (specFile dir "output.hs")
+    Format.file (specFile dir "output.hs")
+      `shouldReturn` result
