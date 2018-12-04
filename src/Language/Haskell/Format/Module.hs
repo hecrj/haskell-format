@@ -23,7 +23,7 @@ format (Module _ head' pragmas imports declarations)
         [ Format.intercalate newLine (List.sort $ map pragma (concatMap pragmaNames pragmas))
         , Format.intercalate (newLine <> newLine) $ filter (mempty /=)
             [ head head'
-            , Format.intercalate newLine (map Import.format imports)
+            , Format.intercalate newLine (List.sort $ map Import.format imports)
             , Format.intercalate
                 (newLine <> newLine <> newLine)
                 (map (Format.intercalate newLine . map Declaration.format) (Declaration.group declarations))
