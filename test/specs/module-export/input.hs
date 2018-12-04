@@ -1,1 +1,1 @@
-module Test (z, x, y) where
+module Test (A(..), B(C), z, x, y) where

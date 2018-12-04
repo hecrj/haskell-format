@@ -50,7 +50,14 @@ exportSpecList (ExportSpecList _ specs) =
 exportSpec :: ExportSpec CommentedSrc -> Format
 exportSpec (EVar _ qname) = Atom.qname qname
 exportSpec (EAbs _ _ qname) = Atom.qname qname
-exportSpec (EThingWith _ _ qname cnames) =
-  Atom.qname qname <> " " <> Format.wrap "(" ")" ", " (map Atom.cname cnames)
+exportSpec (EThingWith _ wildcard qname cnames) =
+  Atom.qname qname <>
+    case wildcard of
+      NoWildcard _ ->
+        Format.wrap "(" ")" ", " (map Atom.cname cnames)
+
+      EWildcard _ _ ->
+        "(..)"
+
 exportSpec (EModuleContents _ moduleName) =
   "module " <> Atom.moduleName moduleName

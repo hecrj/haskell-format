@@ -1,5 +1,7 @@
 module Test
-    ( z
+    ( A(..)
+    , B(C)
+    , z
     , x
     , y
     ) where
