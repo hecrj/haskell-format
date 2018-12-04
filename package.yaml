@@ -1,7 +1,7 @@
 name:                haskell-format
 version:             0.1.0.0
 github:              "hecrj/haskell-format"
-license:             AllRightsReserved
+license:             BSD3
 author:              "Héctor Ramón Jiménez"
 maintainer:          "Héctor Ramón Jiménez"
 copyright:           "Héctor Ramón Jiménez"
