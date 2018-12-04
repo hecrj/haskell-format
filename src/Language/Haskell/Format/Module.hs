@@ -11,6 +11,7 @@ import qualified Language.Haskell.Format.Declaration as Declaration
 import Language.Haskell.Format.Import as Import
 import Language.Haskell.Format.Internal as Format
 import Language.Haskell.Format.Types
+import qualified Data.List as List
 import Prelude hiding (head)
 
 format :: Module CommentedSrc -> Format
@@ -19,7 +20,7 @@ format (Module _ head' pragmas imports declarations)
   | otherwise = result <> newLine
   where
     result = Format.intercalate newLine $ filter (mempty /=)
-        [ Format.intercalate newLine (map pragma pragmas)
+        [ Format.intercalate newLine (List.sort $ map pragma (concatMap pragmaNames pragmas))
         , Format.intercalate (newLine <> newLine) $ filter (mempty /=)
             [ head head'
             , Format.intercalate newLine (map Import.format imports)
@@ -31,8 +32,13 @@ format (Module _ head' pragmas imports declarations)
 
 format _ = error "xml not supported"
 
-pragma :: ModulePragma CommentedSrc -> Format
-pragma = undefined
+pragmaNames :: ModulePragma CommentedSrc -> [Name CommentedSrc]
+pragmaNames (LanguagePragma _ names) = names
+pragmaNames _ = undefined
+
+pragma :: Name CommentedSrc -> Format
+pragma name =
+    "{-# LANGUAGE " <> Atom.name name <> " #-}"
 
 head :: Maybe (ModuleHead CommentedSrc) -> Format
 head Nothing = ""
