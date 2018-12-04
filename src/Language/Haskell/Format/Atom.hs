@@ -39,6 +39,7 @@ specialCon (FunCon _)           = "->"
 specialCon TupleCon {}          = ","
 specialCon (Cons _)             = ":"
 specialCon (UnboxedSingleCon _) = "(# #)"
+specialCon (ExprHole _)         = "?"
 
 type' :: Type CommentedSrc -> Format
 type' (TyApp _ t1 t2)  = type' t1 <> " " <> type' t2

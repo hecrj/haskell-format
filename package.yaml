@@ -1,0 +1,48 @@
+name:                haskell-format
+version:             0.1.0.0
+github:              "hecrj/haskell-format"
+license:             AllRightsReserved
+author:              "Héctor Ramón Jiménez"
+maintainer:          "Héctor Ramón Jiménez"
+copyright:           "Héctor Ramón Jiménez"
+
+extra-source-files:
+  - README.md
+
+description:         A highly opinionated Haskell formatter
+
+dependencies:
+- base >= 4.7 && < 5
+- haskell-src-exts
+- text
+
+ghc-options:
+  - -W
+  - -Werror
+
+library:
+  source-dirs: src
+
+executables:
+  haskell-format:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - haskell-format
+
+tests:
+  haskell-format-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - haskell-format
+    - hspec
+    - directory
