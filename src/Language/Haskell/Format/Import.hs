@@ -28,13 +28,19 @@ format ImportDecl { importQualified, importModule, importAs = as, importSpecs = 
           ""
 
 specList :: ImportSpecList CommentedSrc -> Format
-specList (ImportSpecList src _ specs)
+specList (ImportSpecList src hiding specs)
   | takesOneLine src =
-      "(" <> Format.intercalate ", " (map spec specs) <> ")"
+      mconcat
+        [ if hiding then "hiding " else ""
+        , Format.wrap "(" ")" ", " (map spec specs)
+        ]
 
   | otherwise =
-      Format.indent $
-        Format.wrap "( " (newLine <> ")") (newLine <> ", ") (map spec specs)
+      mconcat
+        [ if hiding then "hiding" <> newLine else ""
+        , Format.indent $
+            Format.wrap "( " (newLine <> ")") (newLine <> ", ") (map spec specs)
+        ]
 
 spec :: ImportSpec CommentedSrc -> Format
 spec (IVar _ name) = Atom.name name

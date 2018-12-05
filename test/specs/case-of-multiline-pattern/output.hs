@@ -15,3 +15,13 @@ test n =
 
         _ ->
             putStrLn "default case"
+
+
+test2 :: Maybe a -> IO ()
+test2 maybe =
+    case maybe of
+        Just _ ->
+            putStrLn "Just a"
+
+        Nothing ->
+            putStrLn "Nothing"

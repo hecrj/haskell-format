@@ -38,13 +38,14 @@ specialCon (ListCon _)          = "[]"
 specialCon (FunCon _)           = "->"
 specialCon TupleCon {}          = ","
 specialCon (Cons _)             = ":"
-specialCon (UnboxedSingleCon _) = "(# #)"
-specialCon (ExprHole _)         = "?"
+specialCon (UnboxedSingleCon _) = undefined
+specialCon (ExprHole _)         = undefined
 
 type' :: Type CommentedSrc -> Format
 type' (TyApp _ t1 t2)  = type' t1 <> " " <> type' t2
 type' (TyCon _ qname') = qname qname'
 type' (TyList _ t)     = "[" <> type' t <> "]"
+type' (TyVar _ name') = name name'
 type' (TyFun src t1 t2)
   | takesOneLine src =
     type' t1 <> " -> " <> type' t2
@@ -53,4 +54,4 @@ type' (TyFun src t1 t2)
       [ type' t1
       , "-> " <> type' t2
       ]
-type' t                = Format.fromString (show t)
+type' t                = error (show t)

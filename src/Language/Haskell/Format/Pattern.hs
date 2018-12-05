@@ -19,4 +19,6 @@ format (PInfixApp _ left qname right) =
   mconcat [ format left, Atom.qname qname, format right ]
 format (PList _ patterns) =
   Format.wrap "[" "]" "," (map format patterns)
-format p                         = Format.fromString (show p)
+format (PApp _ qname patterns) =
+  Format.intercalate " " (Atom.qname qname : map format patterns)
+format p                         = error (show p)

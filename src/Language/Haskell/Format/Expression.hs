@@ -86,7 +86,7 @@ format (Paren _ expr)
   | takesOneLine (ann expr) = "(" <> format expr <> ")"
   | otherwise = "(" <> format expr <> newLine <> ")"
 
-format e = Format.fromString (show e)
+format e = error (show e)
 
 statement :: Stmt CommentedSrc -> Format
 statement (Generator _ pattern_ expression) =
