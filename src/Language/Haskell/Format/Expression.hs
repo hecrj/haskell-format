@@ -82,6 +82,10 @@ format (Case _ target alts) =
 format (Do _ statements) =
   Nested.do_ $ Format.intercalate newLine (map statement statements)
 
+format (Paren _ expr)
+  | takesOneLine (ann expr) = "(" <> format expr <> ")"
+  | otherwise = "(" <> format expr <> newLine <> ")"
+
 format e = Format.fromString (show e)
 
 statement :: Stmt CommentedSrc -> Format
