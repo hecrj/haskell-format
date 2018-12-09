@@ -7,8 +7,8 @@ module Language.Haskell.Format.Expression
 import Language.Haskell.Exts hiding (alt)
 import qualified Language.Haskell.Format.Atom as Atom
 import Language.Haskell.Format.Internal as Format
-import qualified Language.Haskell.Format.Literal as Literal
 import qualified Language.Haskell.Format.Nested as Nested
+import qualified Language.Haskell.Format.Literal as Literal
 import qualified Language.Haskell.Format.Pattern as Pattern
 import Language.Haskell.Format.Types
 
@@ -24,14 +24,21 @@ format (List src elements)
   | takesOneLine src = Format.wrap "[ " " ]" ", " (map format elements)
   | otherwise = Format.wrap "[ " (newLine <> "]") (newLine <> ", ") (map format elements)
 format (InfixApp src left qop right)
-  | takesOneLine src = Format.intercalate " "
-    [ format left
-    , Atom.qop qop
-    , format right
-    ]
+  | takesOneLine src =
+    Format.intercalate " "
+      [ format left
+      , Atom.qop qop
+      , format right
+      ]
   | otherwise =
     format left <> newLine <>
-      Format.indent (Nested.qop qop (format right))
+      (case right of
+        List _ _ ->
+          Format.indent (Nested.qop qop (format right))
+
+        _ ->
+          Format.indent (Atom.qop qop <> " " <> format right)
+      )
 format (If src cond then_ else_)
   | takesOneLine src =
     Format.intercalate " "
@@ -54,7 +61,7 @@ format (If src cond then_ else_)
       | takesOneLine (ann cond) =
         [ Format.intercalate " " [ "if", format cond, "then" ] ]
       | otherwise =
-        [ Nested.if_ (format cond)
+        [ "if " <> format cond
         , "then"
         ]
 format (Case _ target alts) =
@@ -72,7 +79,8 @@ format (Case _ target alts) =
           ]
       | otherwise =
         Format.intercalate newLine
-          [ Nested.case_ (format target)
+          [ "case"
+          , Format.indent (format target)
           , "of"
           ]
 
@@ -80,7 +88,10 @@ format (Case _ target alts) =
       Format.intercalate (newLine <> newLine) (map alt alts)
 
 format (Do _ statements) =
-  Nested.do_ $ Format.intercalate newLine (map statement statements)
+  Format.intercalate newLine
+    [ "do"
+    , Format.indent $ Format.intercalate newLine (map statement statements)
+    ]
 
 format (Paren _ expr)
   | takesOneLine (ann expr) = "(" <> format expr <> ")"
@@ -89,8 +100,13 @@ format (Paren _ expr)
 format e = error (show e)
 
 statement :: Stmt CommentedSrc -> Format
-statement (Generator _ pattern_ expression) =
-  Nested.generator pattern_ (format expression)
+statement (Generator src pattern_ expression)
+  | takesOneLine src = Pattern.format pattern_ <> " <- " <> format expression
+  | otherwise =
+    Format.intercalate newLine
+      [ Pattern.format pattern_ <> " <-"
+      , Format.indent (format expression)
+      ]
 statement (Qualifier _ expression) =
   format expression
 statement s = Format.fromString (show s)
@@ -107,11 +123,10 @@ alt (Alt _ pat_ (UnGuardedRhs _ expression) _) =
 alt (Alt _ pat (GuardedRhss _ rhss) _) =
   Format.intercalate (newLine <> newLine) (map guardedRhs rhss)
   where
-    patternNest = Nested.pattern_ pat
     guardedRhs (GuardedRhs _ [stmt] expression) =
       Format.intercalate newLine
         [ Format.intercalate " "
-          [ patternNest (statement stmt)
+          [ Pattern.format pat <> " | " <> statement stmt
           , "->"
           ]
         , Format.indent (format expression)
