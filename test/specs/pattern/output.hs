@@ -16,7 +16,7 @@ main =
 
 
 test :: Maybe A -> ()
-test (Just{ x, y }) =
+test m@(Just{ x, y }) =
     ()
 test Nothing =
     ()

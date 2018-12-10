@@ -32,6 +32,7 @@ format (PRec src qname fieldPatterns)
 format (PApp _ qname patterns)
   | Atom.isSymbol qname = Format.intercalate " " ("(" <> Atom.qname qname <> ")" : map format patterns)
   | otherwise = Format.intercalate " " (Atom.qname qname : map format patterns)
+format (PAsPat _ name pattern_) = Atom.name name <> "@" <> format pattern_
 format p                         = error (show p)
 
 fieldPattern :: PatField CommentedSrc -> Format
