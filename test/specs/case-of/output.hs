@@ -1,5 +1,6 @@
 module Test where
 
+
 test :: Int -> IO ()
 test n =
     case n of

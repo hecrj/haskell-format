@@ -1,5 +1,6 @@
 module Test where
 
+
 concatLists :: [Int]
 concatLists =
     [ 1

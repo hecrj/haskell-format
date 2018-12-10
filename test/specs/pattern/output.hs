@@ -4,6 +4,7 @@ module Main where
 import System.Environment
 import qualified Language.Haskell.Format as Format
 
+
 main :: IO ()
 main =
     getArgs >>= format

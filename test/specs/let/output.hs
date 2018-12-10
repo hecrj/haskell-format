@@ -1,5 +1,6 @@
 module Main where
 
+
 create :: Name -> IO ( Customer, [Event] )
 create name =
     do

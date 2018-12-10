@@ -2,6 +2,7 @@ module Test where
 
 import Data.Char
 
+
 main :: IO ()
 main =
     do
