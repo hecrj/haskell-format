@@ -66,4 +66,7 @@ type' (TyFun src t1 t2)
       [ type' t1
       , "-> " <> type' t2
       ]
+type' (TyParen src type_)
+  | takesOneLine src = "(" <> type' type_ <> ")"
+  | otherwise = "(" <> type' type_ <> newLine <> ")"
 type' t                = error (show t)
