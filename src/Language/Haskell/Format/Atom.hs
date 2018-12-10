@@ -28,9 +28,18 @@ qname (Qual _ moduleName' name') = moduleName moduleName' <> "." <> name name'
 qname (UnQual _ name')           = name name'
 qname (Special _ specialCon')    = specialCon specialCon'
 
+isSymbol :: QName CommentedSrc -> Bool
+isSymbol (Qual _ _ (Ident _ _)) = False
+isSymbol (UnQual _ (Ident _ _)) = False
+isSymbol _ = True
+
 qop :: QOp CommentedSrc -> Format
-qop (QVarOp _ qname') = qname qname'
-qop (QConOp _ qname') = qname qname'
+qop (QVarOp _ qname')
+  | isSymbol qname' = qname qname'
+  | otherwise = "`" <> qname qname' <> "`"
+qop (QConOp _ qname')
+  | isSymbol qname' = qname qname'
+  | otherwise = "`" <> qname qname' <> "`"
 
 specialCon :: SpecialCon CommentedSrc -> Format
 specialCon (UnitCon _)          = "()"
