@@ -265,6 +265,14 @@ expression (Let _ binds_ expr) =
         , expression expr
         ]
       )
+expression (Lambda src patterns expr)
+  | takesOneLine src =
+    "\\" <> Format.intercalate " " (map Pattern.format patterns) <> " -> " <> expression expr
+  | otherwise =
+    "\\" <> Format.intercalate " " (map Pattern.format patterns) <> " ->" <> newLine <>
+      Format.indent (expression expr)
+expression (RightSection _ qop expr) = "(" <> Atom.qop qop <> " " <> expression expr <> ")"
+expression (LeftSection _ expr qop) = "(" <> expression expr <> " " <> Atom.qop qop <> ")"
 expression (Paren _ expr)
   | takesOneLine (ann expr) = "(" <> expression expr <> ")"
   | otherwise = "(" <> expression expr <> newLine <> ")"
