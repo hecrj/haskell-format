@@ -7,9 +7,10 @@ module Language.Haskell.Format.Declaration
 import qualified Data.List as List
 import Language.Haskell.Exts hiding (alt, binds, name)
 import qualified Language.Haskell.Format.Atom as Atom
-import qualified Language.Haskell.Format.Expression as Expression
 import Language.Haskell.Format.Internal as Format
+import Language.Haskell.Format.Nested as Nested
 import qualified Language.Haskell.Format.Pattern as Pattern
+import qualified Language.Haskell.Format.Literal as Literal
 import Language.Haskell.Format.Types
 import Prelude hiding (head)
 
@@ -92,24 +93,24 @@ where_ binds_ =
     ]
 
 rhsInlined :: Rhs CommentedSrc -> Format
-rhsInlined (UnGuardedRhs _ expression) =
+rhsInlined (UnGuardedRhs _ expr) =
   " " <> Format.intercalate newLine
     [ "="
-    , Format.indent (Expression.format expression)
+    , Format.indent (expression expr)
     ]
 rhsInlined (GuardedRhss _ guardedRhss) =
   newLine <>
     Format.indent (Format.intercalate newLine (map guardedRhs guardedRhss))
 
 guardedRhs :: GuardedRhs CommentedSrc -> Format
-guardedRhs (GuardedRhs _ [stmt] expression) =
+guardedRhs (GuardedRhs _ [stmt] expr) =
   Format.intercalate newLine
     [ Format.intercalate " "
       [ "|"
-      , Expression.statement stmt
+      , statement stmt
       , "="
       ]
-    , Format.indent (Expression.format expression)
+    , Format.indent (expression expr)
     ]
 guardedRhs g = Format.fromString (show g)
 
@@ -167,3 +168,142 @@ instanceHead (IHCon _ qname) = Atom.qname qname
 instanceHead (IHApp _ instanceHead_ type_) =
   instanceHead instanceHead_ <> " " <> Atom.type' type_
 instanceHead instanceHead_ = error $ show instanceHead_
+
+-- Expression
+
+expression :: Exp CommentedSrc -> Format
+expression (Var _ qname) = Atom.qname qname
+expression (Con _ qname) = Atom.qname qname
+expression (Lit _ literal') = Literal.format literal'
+expression (App src e1 e2)
+  | takesOneLine src = expression e1 <> " " <> expression e2
+  | otherwise = expression e1 <> newLine <> Format.indent (expression e2)
+expression (List _ []) = "[]"
+expression (List src elements)
+  | takesOneLine src = Format.wrap "[ " " ]" ", " (map expression elements)
+  | otherwise = Format.wrap "[ " (newLine <> "]") (newLine <> ", ") (map expression elements)
+expression (Tuple src _ elements)
+  | takesOneLine src = Format.wrap "( " " )" ", " (map expression elements)
+  | otherwise = Format.wrap "( " (newLine <> ")") (newLine <> ", ") (map expression elements)
+expression (InfixApp src left qop right)
+  | takesOneLine src =
+    Format.intercalate " "
+      [ expression left
+      , Atom.qop qop
+      , expression right
+      ]
+  | otherwise =
+    expression left <> newLine <>
+      (case right of
+        List _ _ ->
+          Format.indent (Nested.qop qop (expression right))
+
+        _ ->
+          Format.indent (Atom.qop qop <> " " <> expression right)
+      )
+expression (If src cond then_ else_)
+  | takesOneLine src =
+    Format.intercalate " "
+      [ "if"
+      , expression cond
+      , "then"
+      , expression then_
+      , "else"
+      , expression else_
+      ]
+  | otherwise =
+    Format.intercalate newLine $
+      ifThen
+        ++ [ Format.indent (expression then_)
+           , "else"
+           , Format.indent (expression else_)
+           ]
+  where
+    ifThen
+      | takesOneLine (ann cond) =
+        [ Format.intercalate " " [ "if", expression cond, "then" ] ]
+      | otherwise =
+        [ "if " <> expression cond
+        , "then"
+        ]
+expression (Case _ target alts) =
+  Format.intercalate newLine
+    [ caseOf
+    , Format.indent cases
+    ]
+  where
+    caseOf
+      | takesOneLine (ann target) =
+        Format.intercalate " "
+          [ "case"
+          , expression target
+          , "of"
+          ]
+      | otherwise =
+        Format.intercalate newLine
+          [ "case"
+          , Format.indent (expression target)
+          , "of"
+          ]
+
+    cases =
+      Format.intercalate (newLine <> newLine) (map alt alts)
+
+expression (Do _ statements) =
+  Format.intercalate newLine
+    [ "do"
+    , Format.indent $ Format.intercalate newLine (map statement statements)
+    ]
+
+expression (Let _ binds_ expr) =
+  "let" <> newLine <>
+    Format.indent
+      (Format.intercalate newLine
+        [ binds binds_
+        , ""
+        , "in"
+        , expression expr
+        ]
+      )
+expression (Paren _ expr)
+  | takesOneLine (ann expr) = "(" <> expression expr <> ")"
+  | otherwise = "(" <> expression expr <> newLine <> ")"
+
+expression e = error (show e)
+
+statement :: Stmt CommentedSrc -> Format
+statement (Generator src pattern_ expr)
+  | takesOneLine src = Pattern.format pattern_ <> " <- " <> expression expr
+  | otherwise =
+    Format.intercalate newLine
+      [ Pattern.format pattern_ <> " <-"
+      , Format.indent (expression expr)
+      ]
+statement (Qualifier _ expr) =
+  expression expr
+statement (LetStmt _ binds_) =
+  "let" <> newLine <> Format.indent (binds binds_)
+statement s = error $ show s
+
+
+alt :: Alt CommentedSrc -> Format
+alt (Alt _ pat_ (UnGuardedRhs _ expr) _) =
+  Format.intercalate " "
+    [ Pattern.format pat_
+    , Format.intercalate newLine
+      [ "->"
+      , Format.indent (expression expr)
+      ]
+    ]
+alt (Alt _ pat (GuardedRhss _ rhss) _) =
+  Format.intercalate (newLine <> newLine) (map guardedRhs rhss)
+  where
+    guardedRhs (GuardedRhs _ [stmt] expr) =
+      Format.intercalate newLine
+        [ Format.intercalate " "
+          [ Pattern.format pat <> " | " <> statement stmt
+          , "->"
+          ]
+        , Format.indent (expression expr)
+        ]
+    guardedRhs g = Format.fromString (show g)
