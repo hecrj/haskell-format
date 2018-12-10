@@ -18,7 +18,6 @@ dependencies:
 
 ghc-options:
   - -W
-  - -Werror
 
 library:
   source-dirs: src

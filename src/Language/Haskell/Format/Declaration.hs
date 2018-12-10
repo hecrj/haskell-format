@@ -23,7 +23,22 @@ group =
     signatureBinding _ _                 = False
 
 format :: Decl CommentedSrc -> Format
-format (TypeSig _ names type')
+format decl =
+  case snd (ann decl) of
+    [] -> format_ decl
+    comments ->
+      newLine <>
+      Format.intercalate (newLine <> newLine <> newLine)
+        [ Format.intercalate newLine (map comment comments)
+        , format_ decl
+        ]
+
+comment :: Comment -> Format
+comment (Comment _ _ c) =
+  "--" <> Format.fromString c
+
+format_ :: Decl CommentedSrc -> Format
+format_ (TypeSig _ names type')
   | takesOneLine (ann type') =
       typeNames <> " :: " <> Atom.type' type'
   | otherwise =
@@ -36,23 +51,23 @@ format (TypeSig _ names type')
     name n@(Ident _ _) = Atom.name n
     name n@(Symbol _ _) = "(" <> Atom.name n <> ")"
 
-format (PatBind _ pattern' rhs_ maybeWhere) =
+format_ (PatBind _ pattern' rhs_ maybeWhere) =
   mconcat
     [ Pattern.format pattern'
     , rhsInlined rhs_
     , maybe mempty ((newLine <>) . Format.indent . where_) maybeWhere
     ]
 
-format (FunBind _ matches) =
+format_ (FunBind _ matches) =
   Format.intercalate newLine
     (map match matches)
 
-format (TypeDecl src head_ type_)
+format_ (TypeDecl src head_ type_)
   | takesOneLine src = "type " <> head head_ <> " = " <> Atom.type' type_
   | otherwise =
     "type " <> head head_ <> " =" <> newLine <> Format.indent (Atom.type' type_)
 
-format (DataDecl _ dataOrNew _ head_ qualCons derivings) =
+format_ (DataDecl _ dataOrNew _ head_ qualCons derivings) =
   Format.intercalate newLine $ filter (mempty /=)
     [ instruction <> " " <> head head_
     , Format.indent $
@@ -74,7 +89,7 @@ format (DataDecl _ dataOrNew _ head_ qualCons derivings) =
         NewType _ ->
           "newtype"
 
-format d = error (show d)
+format_ d = error (show d)
 
 match :: Match CommentedSrc -> Format
 match (Match _ name patterns rhs_ maybeWhere) =
