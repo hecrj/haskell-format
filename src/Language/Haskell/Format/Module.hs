@@ -56,7 +56,9 @@ exportSpecList (ExportSpecList _ specs) =
       Format.wrap "( " (newLine <> ")") (newLine <> ", ") (map exportSpec specs)
 
 exportSpec :: ExportSpec CommentedSrc -> Format
-exportSpec (EVar _ qname) = Atom.qname qname
+exportSpec (EVar _ qname)
+  | Atom.isSymbol qname = "(" <> Atom.qname qname <> ")"
+  | otherwise = Atom.qname qname
 exportSpec (EAbs _ _ qname) = Atom.qname qname
 exportSpec (EThingWith _ wildcard qname cnames) =
   Atom.qname qname <>

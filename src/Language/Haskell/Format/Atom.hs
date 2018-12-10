@@ -4,6 +4,7 @@ module Language.Haskell.Format.Atom
   , name
   , cname
   , qname
+  , isSymbol
   , qop
   , type'
   ) where

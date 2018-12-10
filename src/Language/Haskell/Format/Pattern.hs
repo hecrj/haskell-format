@@ -10,7 +10,8 @@ import qualified Language.Haskell.Format.Literal as Literal
 import Language.Haskell.Format.Types
 
 format :: Pat CommentedSrc -> Format
-format (PVar _ name_)            = Atom.name name_
+format (PVar _ name@(Ident _ _))             = Atom.name name
+format (PVar _ name@(Symbol _ _))            = "(" <> Atom.name name <> ")"
 format (PWildCard _)             = "_"
 format (PLit _ (Signless _) lit) = Literal.format lit
 format (PLit _ (Negative _) lit) = "-" <> Literal.format lit
@@ -28,8 +29,9 @@ format (PRec src qname fieldPatterns)
   | otherwise = Atom.qname qname <> newLine <>
       Format.indent (Format.wrap "{ " (newLine <> "}") (newLine <> ", ")
         (map fieldPattern fieldPatterns))
-format (PApp _ qname patterns) =
-  Format.intercalate " " (Atom.qname qname : map format patterns)
+format (PApp _ qname patterns)
+  | Atom.isSymbol qname = Format.intercalate " " ("(" <> Atom.qname qname <> ")" : map format patterns)
+  | otherwise = Format.intercalate " " (Atom.qname qname : map format patterns)
 format p                         = error (show p)
 
 fieldPattern :: PatField CommentedSrc -> Format

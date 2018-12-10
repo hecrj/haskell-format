@@ -32,7 +32,9 @@ format (TypeSig _ names type')
         , Format.indent (Atom.type' type')
         ]
   where
-    typeNames = Format.intercalate ", " (map Atom.name names)
+    typeNames = Format.intercalate ", " (map name names)
+    name n@(Ident _ _) = Atom.name n
+    name n@(Symbol _ _) = "(" <> Atom.name n <> ")"
 
 format (PatBind _ pattern' rhs_ maybeWhere) =
   mconcat
@@ -77,11 +79,16 @@ format d = error (show d)
 match :: Match CommentedSrc -> Format
 match (Match _ name patterns rhs_ maybeWhere) =
   Format.intercalate " "
-      [ Atom.name name
+      [ matchName
       , Format.intercalate " " (map Pattern.format patterns)
       ]
       <> rhsInlined rhs_
       <> maybe mempty ((newLine <>) . Format.indent . where_) maybeWhere
+    where
+      matchName =
+        case name of
+          Ident _ _ -> Atom.name name
+          Symbol _ _ -> "(" <> Atom.name name <> ")"
 
 match m = Format.fromString (show m)
 
@@ -122,7 +129,8 @@ binds (BDecls _ declarations) =
 binds b = Format.fromString $ show b
 
 head :: DeclHead CommentedSrc -> Format
-head (DHead _ name) = Atom.name name
+head (DHead _ name@(Ident _ _)) = Atom.name name
+head (DHead _ name@(Symbol _ _)) = "(" <> Atom.name name <> ")"
 head (DHApp _ head_ var) =
   head head_ <> " " <> typeVarBind var
 head h = error $ show h
@@ -172,7 +180,9 @@ instanceHead instanceHead_ = error $ show instanceHead_
 -- Expression
 
 expression :: Exp CommentedSrc -> Format
-expression (Var _ qname) = Atom.qname qname
+expression (Var _ qname)
+  | Atom.isSymbol qname = "(" <> Atom.qname qname <> ")"
+  | otherwise = Atom.qname qname
 expression (Con _ qname) = Atom.qname qname
 expression (Lit _ literal') = Literal.format literal'
 expression (App src e1 e2)

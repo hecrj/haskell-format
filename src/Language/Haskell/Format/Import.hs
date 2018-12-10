@@ -43,7 +43,8 @@ specList (ImportSpecList src hiding specs)
         ]
 
 spec :: ImportSpec CommentedSrc -> Format
-spec (IVar _ name) = Atom.name name
+spec (IVar _ name@(Ident _ _)) = Atom.name name
+spec (IVar _ name@(Symbol _ _)) = "(" <> Atom.name name <> ")"
 spec (IAbs _ _ name) = Atom.name name
 spec (IThingAll _ name) = Atom.name name <> "(..)"
 spec (IThingWith _ name cnames) =
