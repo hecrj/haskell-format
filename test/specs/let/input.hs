@@ -8,9 +8,8 @@ create name = do
     return ( customer, events )
 
 create2 :: Name -> IO ( Customer, [Event] )
-create2 name = do
-    id <- Id <$> Uuid.generate
-    let customer = Customer id name
+create2 name =
+    let customer = Customer name
         events = [Created customer]
-        in
+    in
         return ( customer, events )

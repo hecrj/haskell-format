@@ -16,14 +16,11 @@ create name =
 
 create2 :: Name -> IO ( Customer, [Event] )
 create2 name =
-    do
-        id <- Id <$> Uuid.generate
-        let
-            customer =
-                Customer id name
+    let
+        customer =
+            Customer name
 
-            events =
-                [ Created customer ]
-
-            in
-            return ( customer, events )
+        events =
+            [ Created customer ]
+    in
+        return ( customer, events )

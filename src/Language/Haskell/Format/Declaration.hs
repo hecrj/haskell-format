@@ -257,14 +257,11 @@ expression (Do _ statements) =
 
 expression (Let _ binds_ expr) =
   "let" <> newLine <>
-    Format.indent
-      (Format.intercalate newLine
-        [ binds binds_
-        , ""
-        , "in"
-        , expression expr
-        ]
-      )
+    Format.intercalate newLine
+    [ Format.indent (binds binds_)
+    , "in"
+    , Format.indent (expression expr)
+    ]
 expression (Lambda src patterns expr)
   | takesOneLine src =
     "\\" <> Format.intercalate " " (map Pattern.format patterns) <> " -> " <> expression expr
