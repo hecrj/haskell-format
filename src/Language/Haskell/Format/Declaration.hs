@@ -282,7 +282,7 @@ statement (Generator src pattern_ expr)
 statement (Qualifier _ expr) =
   expression expr
 statement (LetStmt _ binds_) =
-  "let" <> newLine <> Format.indent (binds binds_)
+  "let" <> newLine <> Format.indent (binds binds_) <> newLine
 statement s = error $ show s
 
 

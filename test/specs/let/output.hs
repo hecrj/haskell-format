@@ -10,6 +10,7 @@ create name =
 
             events =
                 [ Created customer ]
+
         return ( customer, events )
 
 
