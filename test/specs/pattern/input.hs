@@ -1,3 +1,4 @@
+{-# LANGUAGE NamedFieldPuns #-}
 module Main where
 
 import qualified Language.Haskell.Format as Format
@@ -8,3 +9,7 @@ main = getArgs >>= format
   where
     format (file:_) = Format.file file >>= putStrLn
     format []       = error "no file provided"
+
+test :: Maybe A -> ()
+test (Just {x,y}) = ()
+test Nothing = ()

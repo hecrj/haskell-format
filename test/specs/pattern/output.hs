@@ -1,3 +1,4 @@
+{-# LANGUAGE NamedFieldPuns #-}
 module Main where
 
 import System.Environment
@@ -11,3 +12,10 @@ main =
             Format.file file >>= putStrLn
         format [] =
             error "no file provided"
+
+
+test :: Maybe A -> ()
+test (Just{ x, y }) =
+    ()
+test Nothing =
+    ()

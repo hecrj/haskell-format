@@ -18,7 +18,21 @@ format (PParen _ pattern_)       = mconcat [ "(", format pattern_, ")" ]
 format (PInfixApp _ left qname right) =
   mconcat [ format left, Atom.qname qname, format right ]
 format (PList _ patterns) =
-  Format.wrap "[" "]" "," (map format patterns)
+  case patterns of
+    [] -> "[]"
+    _ -> Format.wrap "[ " " ]" ", " (map format patterns)
+format (PTuple _ _ patterns) =
+  Format.wrap "( " " )" ", " (map format patterns)
+format (PRec src qname fieldPatterns)
+  | takesOneLine src = Atom.qname qname <> Format.wrap "{ " " }" ", " (map fieldPattern fieldPatterns)
+  | otherwise = Atom.qname qname <> newLine <>
+      Format.indent (Format.wrap "{ " (newLine <> "}") (newLine <> ", ")
+        (map fieldPattern fieldPatterns))
 format (PApp _ qname patterns) =
   Format.intercalate " " (Atom.qname qname : map format patterns)
 format p                         = error (show p)
+
+fieldPattern :: PatField CommentedSrc -> Format
+fieldPattern (PFieldPat _ qname pattern_) = Atom.qname qname <> " = " <> format pattern_
+fieldPattern (PFieldPun _ qname) = Atom.qname qname
+fieldPattern (PFieldWildcard _) = "_"

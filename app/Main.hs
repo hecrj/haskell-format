@@ -6,5 +6,5 @@ import System.Environment
 main :: IO ()
 main = getArgs >>= format
   where
-    format (file:_) = Format.file file >>= putStrLn
+    format (file:_) = Format.file file >>= putStr
     format []       = error "no file provided"
