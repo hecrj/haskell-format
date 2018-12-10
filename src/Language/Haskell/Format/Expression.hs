@@ -23,6 +23,9 @@ format (List _ []) = "[]"
 format (List src elements)
   | takesOneLine src = Format.wrap "[ " " ]" ", " (map format elements)
   | otherwise = Format.wrap "[ " (newLine <> "]") (newLine <> ", ") (map format elements)
+format (Tuple src _ elements)
+  | takesOneLine src = Format.wrap "( " " )" ", " (map format elements)
+  | otherwise = Format.wrap "( " (newLine <> ")") (newLine <> ", ") (map format elements)
 format (InfixApp src left qop right)
   | takesOneLine src =
     Format.intercalate " "
