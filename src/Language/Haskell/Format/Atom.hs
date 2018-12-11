@@ -71,8 +71,8 @@ specialCon (ListCon _) =
     "[]"
 specialCon (FunCon _) =
     "->"
-specialCon TupleCon{  } =
-    ","
+specialCon (TupleCon _ _ n) =
+    "(" <> mconcat (replicate (n-1) ",") <> ")"
 specialCon (Cons _) =
     ":"
 specialCon (UnboxedSingleCon _) =

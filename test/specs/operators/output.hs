@@ -11,6 +11,11 @@ test =
     foldr 1 (*)
 
 
+test2 :: a -> a -> ( a, a )
+test2 =
+    (,)
+
+
 (|>) :: a -> (a -> b) -> b
 (|>) v f =
     f v
