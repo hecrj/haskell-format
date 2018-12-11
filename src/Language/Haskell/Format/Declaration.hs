@@ -271,14 +271,20 @@ expression (InfixApp src left qop right)
             , expression right
             ]
     | otherwise =
-        expression left <> newLine
-            <> (case right of
-                List _ _ ->
-                    Format.indent (Nested.qop qop (expression right))
+        case qop of
+            QVarOp _ (UnQual _ (Symbol _ "$")) ->
+                expression left <> " " <> Atom.qop qop <> newLine
+                    <> Format.indent (expression right)
 
-                _ ->
-                    Format.indent (Atom.qop qop <> " " <> expression right)
-            )
+            _ ->
+                expression left <> newLine
+                    <> (case right of
+                        List _ _ ->
+                            Format.indent (Nested.qop qop (expression right))
+
+                        _ ->
+                            Format.indent (Atom.qop qop <> " " <> expression right)
+                    )
 expression (If src cond then_ else_)
     | takesOneLine src =
         Format.intercalate " "

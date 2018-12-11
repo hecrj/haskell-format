@@ -3,8 +3,8 @@ module Test where
 
 test :: Int -> Int -> IO ()
 test a b =
-    putStrLn
-        $ mconcat
+    putStrLn $
+        mconcat
             [ "Addition: "
             , show addition
             , ", Subtraction: "

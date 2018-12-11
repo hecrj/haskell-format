@@ -16,4 +16,4 @@ file filepath =
                 return $ Format.toString (Module.format (associateHaddock ast))
 
             ParseFailed _ err ->
-                return err
+                error err
