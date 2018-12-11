@@ -9,6 +9,7 @@ main =
         line <-
             map toUpper
                 <$> getLine
+
         putStrLn line
 
 
@@ -18,4 +19,7 @@ test =
         (first:_) <-
             map toUpper
                 <$> getLine
+
+        x <- Ok 1
+        y <- Ok 2
         putStrLn [ first ]

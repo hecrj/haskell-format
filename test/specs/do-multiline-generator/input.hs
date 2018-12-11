@@ -13,4 +13,7 @@ test = do
   (first
     :_) <- map toUpper <$>
     getLine
+
+  x <- Ok 1
+  y <- Ok 2
   putStrLn [first]

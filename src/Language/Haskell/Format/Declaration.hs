@@ -78,11 +78,11 @@ format_ (TypeDecl src head_ type_)
     | otherwise =
         "type " <> head head_ <> " =" <> newLine <> Format.indent (Atom.type' type_)
 format_ (DataDecl _ dataOrNew _ head_ qualCons derivings) =
-    Format.intercalate newLine
-        $ filter (mempty /=)
+    Format.intercalate newLine $
+        filter (mempty /=)
             [ instruction <> " " <> head head_
-            , Format.indent
-                $ "= "
+            , Format.indent $
+                "= "
                     <> Format.intercalate (newLine <> "| ")
                         (map qualifiedConstructor qualCons)
             , case derivings of
@@ -160,8 +160,8 @@ guardedRhs g =
 
 binds :: Binds CommentedSrc -> Format
 binds (BDecls _ declarations) =
-    Format.intercalate (newLine <> newLine)
-        $ map (Format.intercalate newLine . map format) (group declarations)
+    Format.intercalate (newLine <> newLine) $
+        map (Format.intercalate newLine . map format) (group declarations)
 binds b =
     Format.fromString $ show b
 
@@ -296,8 +296,8 @@ expression (If src cond then_ else_)
             , expression else_
             ]
     | otherwise =
-        Format.intercalate newLine
-            $ ifThen
+        Format.intercalate newLine $
+            ifThen
                 ++ [ Format.indent (expression then_)
                    , "else"
                    , Format.indent (expression else_)
@@ -335,8 +335,16 @@ expression (Case _ target alts) =
 expression (Do _ statements) =
     Format.intercalate newLine
         [ "do"
-        , Format.indent $ Format.intercalate newLine (map statement statements)
+        , Format.indent
+            (Format.intercalate (newLine <> newLine)
+                (map (Format.intercalate newLine . map statement)
+                    (List.groupBy oneLiners statements)
+                )
+            )
         ]
+    where
+        oneLiners node1 node2 =
+            takesOneLine (ann node1) && takesOneLine (ann node2)
 expression (Let _ binds_ expr) =
     "let" <> newLine
         <> Format.intercalate newLine
@@ -375,7 +383,7 @@ statement (Generator src pattern_ expr)
 statement (Qualifier _ expr) =
     expression expr
 statement (LetStmt _ binds_) =
-    "let" <> newLine <> Format.indent (binds binds_) <> newLine
+    "let" <> newLine <> Format.indent (binds binds_)
 statement s =
     error $ show s
 

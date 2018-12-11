@@ -5,6 +5,7 @@ create :: Name -> IO ( Customer, [Event] )
 create name =
     do
         id <- Id <$> Uuid.generate
+
         let
             customer =
                 Customer id name
