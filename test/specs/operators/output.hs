@@ -8,7 +8,7 @@ import Operators ((|>), (>>>))
 
 test :: [Int] -> Int
 test =
-    foldr 1 (*)
+    foldr 1.0 (*)
 
 
 test2 :: a -> a -> ( a, a )

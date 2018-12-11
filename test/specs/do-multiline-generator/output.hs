@@ -4,22 +4,20 @@ import Data.Char
 
 
 main :: IO ()
-main =
-    do
-        line <-
-            map toUpper
-                <$> getLine
+main = do
+    line <-
+        map toUpper
+            <$> getLine
 
-        putStrLn line
+    putStrLn line
 
 
 test :: IO ()
-test =
-    do
-        (first:_) <-
-            map toUpper
-                <$> getLine
+test = do
+    (first:_) <-
+        map toUpper
+            <$> getLine
 
-        x <- Ok 1
-        y <- Ok 2
-        putStrLn [ first ]
+    x <- Ok 1
+    y <- Ok 2
+    putStrLn [ first ]

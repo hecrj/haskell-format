@@ -13,5 +13,7 @@ format (String _ _ s) =
     "\"" <> Format.fromString s <> "\""
 format (Int _ _ s) =
     Format.fromString s
+format (Frac _ _ s) =
+    Format.fromString s
 format l =
     error (show l)

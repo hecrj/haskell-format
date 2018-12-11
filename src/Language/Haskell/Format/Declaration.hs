@@ -135,10 +135,19 @@ where_ binds_ =
 rhsInlined :: Rhs CommentedSrc -> Format
 rhsInlined (UnGuardedRhs _ expr) =
     " "
-        <> Format.intercalate newLine
-            [ "="
-            , Format.indent (expression expr)
-            ]
+        <> (case expr of
+            Do _ (_:_:_) ->
+                Format.intercalate " "
+                    [ "="
+                    , expression expr
+                    ]
+
+            _ ->
+                Format.intercalate newLine
+                    [ "="
+                    , Format.indent (expression expr)
+                    ]
+        )
 rhsInlined (GuardedRhss _ guardedRhss) =
     newLine
         <> Format.indent (Format.intercalate newLine (map guardedRhs guardedRhss))
@@ -273,8 +282,13 @@ expression (InfixApp src left qop right)
     | otherwise =
         case qop of
             QVarOp _ (UnQual _ (Symbol _ "$")) ->
-                expression left <> " " <> Atom.qop qop <> newLine
-                    <> Format.indent (expression right)
+                case right of
+                    Do _ (_:_:_) ->
+                        expression left <> " " <> Atom.qop qop <> " " <> expression right
+
+                    _ ->
+                        expression left <> " " <> Atom.qop qop <> newLine
+                            <> Format.indent (expression right)
 
             _ ->
                 expression left <> newLine
@@ -333,15 +347,20 @@ expression (Case _ target alts) =
         cases =
             Format.intercalate (newLine <> newLine) (map alt alts)
 expression (Do _ statements) =
-    Format.intercalate newLine
-        [ "do"
-        , Format.indent
-            (Format.intercalate (newLine <> newLine)
-                (map (Format.intercalate newLine . map statement)
-                    (List.groupBy oneLiners statements)
-                )
-            )
-        ]
+    case statements of
+        [ statement_ ] ->
+            statement statement_
+
+        _ ->
+            Format.intercalate newLine
+                [ "do"
+                , Format.indent
+                    (Format.intercalate (newLine <> newLine)
+                        (map (Format.intercalate newLine . map statement)
+                            (List.groupBy oneLiners statements)
+                        )
+                    )
+                ]
     where
         oneLiners node1 node2 =
             takesOneLine (ann node1) && takesOneLine (ann node2)
