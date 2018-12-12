@@ -9,6 +9,8 @@ import Language.Haskell.Format.Types
 
 
 format :: Literal CommentedSrc -> Format
+format (Char _ _ s) =
+    "'" <> Format.fromString s <> "'"
 format (String _ _ s) =
     "\"" <> Format.fromString s <> "\""
 format (Int _ _ s) =

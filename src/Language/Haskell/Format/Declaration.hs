@@ -186,7 +186,7 @@ match (Match _ name patterns rhs_ maybeWhere) =
                 Symbol _ _ ->
                     "(" <> Atom.name name <> ")"
 match m =
-    Format.fromString (show m)
+    error (show m)
 
 
 where_ :: Binds CommentedSrc -> Format
@@ -350,6 +350,8 @@ expression (RecConstr src qname fields)
                 Format.wrap "{ " (newLine <> "}") (newLine <> ", ")
                     (map fieldUpdate fields)
             ]
+expression (NegApp _ expr) =
+    "-" <> expression expr
 expression (InfixApp src left qop right)
     | takesOneLine src =
         Format.intercalate " "
