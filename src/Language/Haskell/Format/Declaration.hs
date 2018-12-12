@@ -390,7 +390,7 @@ expression (If src cond then_ else_)
         Format.intercalate newLine $
             ifThen
                 ++ [ Format.indent (expression then_)
-                   , "else"
+                   , newLine <> "else"
                    , Format.indent (expression else_)
                    ]
     where

@@ -5,6 +5,7 @@ test :: Int -> IO ()
 test n =
     if n > 10 then
         putStrLn "n > 10"
+
     else
         putStrLn "n <= 10"
 
@@ -15,5 +16,6 @@ testMultilineCondition n =
         && even n
     then
         putStrLn "n > 10 and even"
+
     else
         putStrLn "n <= 10 or odd"
