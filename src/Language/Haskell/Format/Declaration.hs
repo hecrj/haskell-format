@@ -266,12 +266,25 @@ expression (List src elements)
     | takesOneLine src =
         Format.wrap "[ " " ]" ", " (map expression elements)
     | otherwise =
-        Format.wrap "[ " (newLine <> "]") (newLine <> ", ") (map expression elements)
+        Format.wrap "[ " (newLine <> "]") (newLine <> ", ") (map listOrTupleElement elements)
 expression (Tuple src _ elements)
     | takesOneLine src =
         Format.wrap "( " " )" ", " (map expression elements)
     | otherwise =
-        Format.wrap "( " (newLine <> ")") (newLine <> ", ") (map expression elements)
+        Format.wrap "( " (newLine <> ")") (newLine <> ", ") (map listOrTupleElement elements)
+expression (RecConstr src qname fields)
+    | takesOneLine src =
+        Format.intercalate " "
+            [ Atom.qname qname
+            , Format.wrap "{ " " }" ", " (map fieldUpdate fields)
+            ]
+    | otherwise =
+        Format.intercalate newLine
+            [ Atom.qname qname
+            , Format.indent $
+                Format.wrap "{ " (newLine <> "}") (newLine <> ", ")
+                    (map fieldUpdate fields)
+            ]
 expression (InfixApp src left qop right)
     | takesOneLine src =
         Format.intercalate " "
@@ -429,3 +442,36 @@ alt (Alt _ pat (GuardedRhss _ rhss) _) =
                 ]
         guardedRhs g =
             Format.fromString (show g)
+
+
+fieldUpdate :: FieldUpdate CommentedSrc -> Format
+fieldUpdate field =
+    case field of
+        FieldUpdate _ qname expr ->
+            Atom.qname qname <> " = " <> expression expr
+
+        FieldPun _ qname ->
+            Atom.qname qname
+
+        FieldWildcard _ ->
+            ".."
+
+listOrTupleElement :: Exp CommentedSrc -> Format
+listOrTupleElement expr =
+    case expr of
+      List{} ->
+          alignTail (expression expr)
+
+      Tuple{} ->
+          alignTail (expression expr)
+
+      _ ->
+          expression expr
+    where
+        alignTail target =
+            case Format.lines target of
+              x:xs ->
+                  Format.intercalate newLine (x : map ("  " <>) xs) 
+
+              _ ->
+                  target

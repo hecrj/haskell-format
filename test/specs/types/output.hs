@@ -27,3 +27,11 @@ data F
         , d :: String
         }
     deriving (Eq, Show)
+
+
+build :: F
+build =
+    F
+        { c = "c"
+        , d = "d"
+        }
