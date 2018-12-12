@@ -12,8 +12,9 @@ test n =
 
 testMultilineCondition :: Int -> IO ()
 testMultilineCondition n =
-    if n > 10
-        && even n
+    if
+        n > 10
+            && even n
     then
         putStrLn "n > 10 and even"
 

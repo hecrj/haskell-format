@@ -159,7 +159,8 @@ instanceDeclaration instanceDeclaration_ =
                 [ "type"
                 , if takesOneLine src then
                     Atom.type' left <> " = " <> Atom.type' right
-                else
+
+                  else
                     Atom.type' left <> newLine
                         <> Format.indent ("= " <> Atom.type' right)
                 ]
@@ -388,19 +389,11 @@ expression (If src cond then_ else_)
             ]
     | otherwise =
         Format.intercalate newLine $
-            ifThen
+            ifThen cond
                 ++ [ Format.indent (expression then_)
                    , newLine <> "else"
                    , Format.indent (expression else_)
                    ]
-    where
-        ifThen
-            | takesOneLine (ann cond) =
-                [ Format.intercalate " " [ "if", expression cond, "then" ] ]
-            | otherwise =
-                [ "if " <> expression cond
-                , "then"
-                ]
 expression (Case _ target alts) =
     Format.intercalate newLine
         [ caseOf
@@ -530,6 +523,30 @@ listOrTupleElement expr =
         Tuple{  } ->
             alignTail (expression expr)
 
+        If src cond then_ else_ ->
+            if takesOneLine src then
+                expression expr
+
+            else
+                let
+                    alignedIfThen =
+                        case ifThen cond of
+                            [ if_, condition, then_ ] ->
+                                [ if_
+                                , condition
+                                , "  " <> then_
+                                ]
+
+                            ifThen_ ->
+                                ifThen_
+                in
+                    Format.intercalate newLine $
+                        alignedIfThen
+                            ++ [ Format.indent (expression then_)
+                               , newLine <> "  else"
+                               , Format.indent (expression else_)
+                               ]
+
         _ ->
             expression expr
     where
@@ -540,3 +557,14 @@ listOrTupleElement expr =
 
                 _ ->
                     target
+
+
+ifThen :: Exp CommentedSrc -> [Format]
+ifThen cond
+    | takesOneLine (ann cond) =
+        [ Format.intercalate " " [ "if", expression cond, "then" ] ]
+    | otherwise =
+        [ "if"
+        , Format.indent (expression cond)
+        , "then"
+        ]

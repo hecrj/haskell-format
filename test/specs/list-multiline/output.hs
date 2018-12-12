@@ -42,6 +42,25 @@ listInsideTuple =
     )
 
 
+operations :: Int -> IO ()
+operations n =
+    mconcat
+        [ if n > 10 then
+            print "n > 10"
+
+          else
+            print "n <= 10"
+        , if
+            n > 10
+                && even n
+          then
+            print "n > 10 and even"
+
+          else
+            print "n <= 10 or odd"
+        ]
+
+
 main :: IO ()
 main =
     print someList
