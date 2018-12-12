@@ -100,8 +100,72 @@ format_ (DataDecl _ dataOrNew _ head_ qualCons derivings) =
 
                 NewType _ ->
                     "newtype"
+format_ (ClassDecl _ _ head_ _ maybeClassDeclarations) =
+    Format.intercalate newLine $
+        filter (mempty /=)
+            [ Format.intercalate " "
+                [ "class"
+                , head head_
+                , "where"
+                ]
+            , case maybeClassDeclarations of
+                Just classDeclarations ->
+                    Format.indent $
+                        Format.intercalate newLine
+                            (map classDeclaration classDeclarations)
+
+                _ ->
+                    ""
+            ]
+format_ (InstDecl _ _ instanceRule_ maybeInstanceDeclarations) =
+    Format.intercalate newLine $
+        filter (mempty /=)
+            [ Format.intercalate " "
+                [ "instance"
+                , instanceRule instanceRule_
+                , "where"
+                ]
+            , case maybeInstanceDeclarations of
+                Just instanceDeclarations ->
+                    Format.indent $
+                        Format.intercalate (newLine <> newLine)
+                            (map instanceDeclaration instanceDeclarations)
+
+                _ ->
+                    ""
+            ]
 format_ d =
     error (show d)
+
+
+classDeclaration :: ClassDecl CommentedSrc -> Format
+classDeclaration classDeclaration_ =
+    case classDeclaration_ of
+        ClsDecl _ declaration ->
+            format declaration
+
+        d ->
+            error (show d)
+
+
+instanceDeclaration :: InstDecl CommentedSrc -> Format
+instanceDeclaration instanceDeclaration_ =
+    case instanceDeclaration_ of
+        InsDecl _ declaration ->
+            format declaration
+
+        InsType src left right ->
+            Format.intercalate " "
+                [ "type"
+                , if takesOneLine src then
+                    Atom.type' left <> " = " <> Atom.type' right
+                else
+                    Atom.type' left <> newLine
+                        <> Format.indent ("= " <> Atom.type' right)
+                ]
+
+        d ->
+            error (show d)
 
 
 match :: Match CommentedSrc -> Format
@@ -456,22 +520,23 @@ fieldUpdate field =
         FieldWildcard _ ->
             ".."
 
+
 listOrTupleElement :: Exp CommentedSrc -> Format
 listOrTupleElement expr =
     case expr of
-      List{} ->
-          alignTail (expression expr)
+        List{  } ->
+            alignTail (expression expr)
 
-      Tuple{} ->
-          alignTail (expression expr)
+        Tuple{  } ->
+            alignTail (expression expr)
 
-      _ ->
-          expression expr
+        _ ->
+            expression expr
     where
         alignTail target =
             case Format.lines target of
-              x:xs ->
-                  Format.intercalate newLine (x : map ("  " <>) xs) 
+                x:xs ->
+                    Format.intercalate newLine (x : map ("  " <>) xs)
 
-              _ ->
-                  target
+                _ ->
+                    target

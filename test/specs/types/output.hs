@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 module Main where
 
 
@@ -35,3 +36,18 @@ build =
         { c = "c"
         , d = "d"
         }
+
+
+class Repository r where
+    create :: r -> String -> Int -> IO ()
+    read :: String -> IO (Maybe Int)
+
+
+instance Repository (Dict String Int) where
+    type X = Y
+
+    create dict string int =
+        Dict.set dict string int
+
+    read =
+        Dict.get
