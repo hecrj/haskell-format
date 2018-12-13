@@ -32,6 +32,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - haskell-format
+    - directory
+    - filepath
 
 tests:
   haskell-format-test:

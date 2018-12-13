@@ -23,13 +23,13 @@ format (Module _ head' pragmas imports declarations)
         result <> newLine
     where
         result =
-            Format.intercalate newLine
-                $ filter (mempty /=)
+            Format.intercalate newLine $
+                filter (mempty /=)
                     [ Format.intercalate newLine (List.sort $ map pragma (concatMap pragmaNames pragmas))
-                    , Format.intercalate (newLine <> newLine <> newLine)
-                        $ filter (mempty /=)
-                            [ Format.intercalate (newLine <> newLine)
-                                $ filter (mempty /=)
+                    , Format.intercalate (newLine <> newLine <> newLine) $
+                        filter (mempty /=)
+                            [ Format.intercalate (newLine <> newLine) $
+                                filter (mempty /=)
                                     [ head head'
                                     , Format.intercalate newLine (List.sort $ map Import.format imports)
                                     ]
@@ -69,8 +69,8 @@ head head_ =
 
 exportSpecList :: ExportSpecList CommentedSrc -> Format
 exportSpecList (ExportSpecList _ specs) =
-    Format.indent
-        $ Format.wrap "( " (newLine <> ")") (newLine <> ", ") (map exportSpec specs)
+    Format.indent $
+        Format.wrap "( " (newLine <> ")") (newLine <> ", ") (map exportSpec specs)
 
 
 exportSpec :: ExportSpec CommentedSrc -> Format

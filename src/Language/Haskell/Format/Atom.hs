@@ -72,7 +72,7 @@ specialCon (ListCon _) =
 specialCon (FunCon _) =
     "->"
 specialCon (TupleCon _ _ n) =
-    "(" <> mconcat (replicate (n-1) ",") <> ")"
+    "(" <> mconcat (replicate (n - 1) ",") <> ")"
 specialCon (Cons _) =
     ":"
 specialCon (UnboxedSingleCon _) =

@@ -15,8 +15,8 @@ format ImportDecl{ importQualified, importModule, importAs = as, importSpecs = s
     importLine <> specsSeparator <> maybe "" specList specs
     where
         importLine =
-            Format.intercalate " "
-                $ filter (mempty /=)
+            Format.intercalate " " $
+                filter (mempty /=)
                     [ "import"
                     , if importQualified then "qualified" else ""
                     , Atom.moduleName importModule
@@ -42,8 +42,8 @@ specList (ImportSpecList src hiding specs)
     | otherwise =
         mconcat
             [ if hiding then "hiding" <> newLine else ""
-            , Format.indent
-                $ Format.wrap "( " (newLine <> ")") (newLine <> ", ") (map spec specs)
+            , Format.indent $
+                Format.wrap "( " (newLine <> ")") (newLine <> ", ") (map spec specs)
             ]
 
 
