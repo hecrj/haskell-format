@@ -23,6 +23,14 @@ data C
     deriving Show
 
 
+data Z a b
+    = Z
+        (X a b)
+        ( X a b
+        , X a b
+        )
+
+
 data F
     = F
         { c :: String

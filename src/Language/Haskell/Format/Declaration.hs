@@ -288,8 +288,14 @@ qualifiedConstructor (QualConDecl _ _ _ con_) =
 
 
 constructor :: ConDecl CommentedSrc -> Format
-constructor (ConDecl _ name types) =
-    Format.intercalate " " (Atom.name name : map type' types)
+constructor (ConDecl src name types)
+    | takesOneLine src =
+        Format.intercalate " " (Atom.name name : map type' types)
+    | otherwise =
+        Format.intercalate newLine
+            [ Atom.name name
+            , Format.indent $ Format.intercalate newLine (map type' types)
+            ]
 constructor (RecDecl src name fields)
     | takesOneLine src =
         Atom.name name <> " " <> Format.wrap "{ " " }" ", " (map field fields)

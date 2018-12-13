@@ -12,6 +12,12 @@ newtype A = B Int
 
 data C = D String | E deriving (Show)
 
+data Z a b =
+  Z
+    (X a b)
+    (X a b
+    , X a b)
+
 data F = F
   { c :: String,
     d :: String
