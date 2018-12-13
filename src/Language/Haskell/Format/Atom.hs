@@ -6,7 +6,6 @@ module Language.Haskell.Format.Atom
     , qname
     , isSymbol
     , qop
-    , type'
     ) where
 
 import Language.Haskell.Exts hiding (name)
@@ -79,34 +78,3 @@ specialCon (UnboxedSingleCon _) =
     undefined
 specialCon (ExprHole _) =
     undefined
-
-
-type' :: Type CommentedSrc -> Format
-type' (TyApp _ t1 t2) =
-    type' t1 <> " " <> type' t2
-type' (TyCon _ qname') =
-    qname qname'
-type' (TyList _ t) =
-    "[" <> type' t <> "]"
-type' (TyTuple src _ types)
-    | takesOneLine src =
-        Format.wrap "( " " )" ", " (map type' types)
-    | otherwise =
-        Format.wrap "( " (newLine <> ")") (newLine <> ", ") (map type' types)
-type' (TyVar _ name') =
-    name name'
-type' (TyFun src t1 t2)
-    | takesOneLine src =
-        type' t1 <> " -> " <> type' t2
-    | otherwise =
-        Format.intercalate newLine
-            [ type' t1
-            , "-> " <> type' t2
-            ]
-type' (TyParen src type_)
-    | takesOneLine src =
-        "(" <> type' type_ <> ")"
-    | otherwise =
-        "(" <> type' type_ <> newLine <> ")"
-type' t =
-    error (show t)

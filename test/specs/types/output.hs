@@ -38,7 +38,12 @@ build =
         }
 
 
-class Repository r where
+test :: Num n => n -> ()
+test _ =
+    ()
+
+
+class (Num r, Ord r) => Repository r where
     create :: r -> String -> Int -> IO ()
     read :: String -> IO (Maybe Int)
 

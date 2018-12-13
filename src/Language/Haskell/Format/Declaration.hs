@@ -47,13 +47,13 @@ comment (Comment _ _ c) =
 
 
 format_ :: Decl CommentedSrc -> Format
-format_ (TypeSig _ names type')
-    | takesOneLine (ann type') =
-        typeNames <> " :: " <> Atom.type' type'
+format_ (TypeSig _ names type_)
+    | takesOneLine (ann type_) =
+        typeNames <> " :: " <> type' type_
     | otherwise =
         Format.intercalate newLine
             [ typeNames <> " ::"
-            , Format.indent (Atom.type' type')
+            , Format.indent (type' type_)
             ]
     where
         typeNames =
@@ -74,9 +74,9 @@ format_ (FunBind _ matches) =
         (map match matches)
 format_ (TypeDecl src head_ type_)
     | takesOneLine src =
-        "type " <> head head_ <> " = " <> Atom.type' type_
+        "type " <> head head_ <> " = " <> type' type_
     | otherwise =
-        "type " <> head head_ <> " =" <> newLine <> Format.indent (Atom.type' type_)
+        "type " <> head head_ <> " =" <> newLine <> Format.indent (type' type_)
 format_ (DataDecl _ dataOrNew _ head_ qualCons derivings) =
     Format.intercalate newLine $
         filter (mempty /=)
@@ -100,14 +100,16 @@ format_ (DataDecl _ dataOrNew _ head_ qualCons derivings) =
 
                 NewType _ ->
                     "newtype"
-format_ (ClassDecl _ _ head_ _ maybeClassDeclarations) =
+format_ (ClassDecl _ maybeContext head_ _ maybeClassDeclarations) =
     Format.intercalate newLine $
         filter (mempty /=)
-            [ Format.intercalate " "
-                [ "class"
-                , head head_
-                , "where"
-                ]
+            [ Format.intercalate " " $
+                filter (mempty /=)
+                    [ "class"
+                    , maybe mempty context maybeContext
+                    , head head_
+                    , "where"
+                    ]
             , case maybeClassDeclarations of
                 Just classDeclarations ->
                     Format.indent $
@@ -158,11 +160,11 @@ instanceDeclaration instanceDeclaration_ =
             Format.intercalate " "
                 [ "type"
                 , if takesOneLine src then
-                    Atom.type' left <> " = " <> Atom.type' right
+                    type' left <> " = " <> type' right
 
                   else
-                    Atom.type' left <> newLine
-                        <> Format.indent ("= " <> Atom.type' right)
+                    type' left <> newLine
+                        <> Format.indent ("= " <> type' right)
                 ]
 
         d ->
@@ -265,7 +267,7 @@ qualifiedConstructor (QualConDecl _ _ _ con_) =
 
 constructor :: ConDecl CommentedSrc -> Format
 constructor (ConDecl _ name types) =
-    Format.intercalate " " (Atom.name name : map Atom.type' types)
+    Format.intercalate " " (Atom.name name : map type' types)
 constructor (RecDecl src name fields)
     | takesOneLine src =
         Atom.name name <> " " <> Format.wrap "{ " " }" ", " (map field fields)
@@ -279,7 +281,7 @@ constructor con =
 
 field :: FieldDecl CommentedSrc -> Format
 field (FieldDecl _ (name:_) type_) =
-    Atom.name name <> " :: " <> Atom.type' type_
+    Atom.name name <> " :: " <> type' type_
 field f =
     error $ show f
 
@@ -305,7 +307,7 @@ instanceHead :: InstHead CommentedSrc -> Format
 instanceHead (IHCon _ qname) =
     Atom.qname qname
 instanceHead (IHApp _ instanceHead_ type_) =
-    instanceHead instanceHead_ <> " " <> Atom.type' type_
+    instanceHead instanceHead_ <> " " <> type' type_
 instanceHead instanceHead_ =
     error $ show instanceHead_
 
@@ -570,3 +572,66 @@ ifThen cond
         , Format.indent (expression cond)
         , "then"
         ]
+
+
+context :: Context CommentedSrc -> Format
+context ctx =
+    case ctx of
+        CxSingle _ assertion_ ->
+            assertion assertion_ <> " =>"
+
+        CxTuple _ assertions ->
+            Format.wrap "(" ")" ", " (map assertion assertions) <> " =>"
+
+        _ ->
+            error (show ctx)
+
+
+assertion :: Asst CommentedSrc -> Format
+assertion asst =
+    case asst of
+        ClassA _ qname types ->
+            Format.intercalate " " (Atom.qname qname : map type' types)
+
+        ParenA _ parenAsst ->
+            "(" <> assertion parenAsst <> ")"
+
+        _ ->
+            error (show asst)
+
+
+type' :: Type CommentedSrc -> Format
+type' (TyForall _ _ maybeContext type_) =
+    Format.intercalate " " $
+        filter (mempty /=)
+            [ maybe mempty context maybeContext
+            , type' type_
+            ]
+type' (TyApp _ t1 t2) =
+    type' t1 <> " " <> type' t2
+type' (TyCon _ qname') =
+    Atom.qname qname'
+type' (TyList _ t) =
+    "[" <> type' t <> "]"
+type' (TyTuple src _ types)
+    | takesOneLine src =
+        Format.wrap "( " " )" ", " (map type' types)
+    | otherwise =
+        Format.wrap "( " (newLine <> ")") (newLine <> ", ") (map type' types)
+type' (TyVar _ name') =
+    Atom.name name'
+type' (TyFun src t1 t2)
+    | takesOneLine src =
+        type' t1 <> " -> " <> type' t2
+    | otherwise =
+        Format.intercalate newLine
+            [ type' t1
+            , "-> " <> type' t2
+            ]
+type' (TyParen src type_)
+    | takesOneLine src =
+        "(" <> type' type_ <> ")"
+    | otherwise =
+        "(" <> type' type_ <> newLine <> ")"
+type' t =
+    error (show t)
