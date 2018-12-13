@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE GADTs #-}
 module Main where
 
 type X a b = Y a b
@@ -15,6 +16,9 @@ data F = F
   { c :: String,
     d :: String
   } deriving (Eq, Show)
+
+data Sql where
+    Sql :: Sql.Connection conn => conn -> Sql
 
 build :: F
 build =

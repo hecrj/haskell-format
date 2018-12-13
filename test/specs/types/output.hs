@@ -1,3 +1,4 @@
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeFamilies #-}
 module Main where
 
@@ -28,6 +29,10 @@ data F
         , d :: String
         }
     deriving (Eq, Show)
+
+
+data Sql where
+    Sql :: Sql.Connection conn => conn -> Sql
 
 
 build :: F

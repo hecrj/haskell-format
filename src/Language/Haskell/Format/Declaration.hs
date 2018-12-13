@@ -100,6 +100,28 @@ format_ (DataDecl _ dataOrNew _ head_ qualCons derivings) =
 
                 NewType _ ->
                     "newtype"
+format_ (GDataDecl _ dataOrNew _ head_ _ gadtDeclarations derivings) =
+    Format.intercalate newLine $
+        filter (mempty /=)
+            [ instruction <> " " <> head head_ <> " where"
+            , Format.indent $
+                Format.intercalate (newLine <> newLine)
+                    (map gadtDeclaration gadtDeclarations)
+            , case derivings of
+                first:_ ->
+                    Format.indent $ "deriving " <> deriving_ first
+
+                _ ->
+                    ""
+            ]
+    where
+        instruction =
+            case dataOrNew of
+                DataType _ ->
+                    "data"
+
+                NewType _ ->
+                    "newtype"
 format_ (ClassDecl _ maybeContext head_ _ maybeClassDeclarations) =
     Format.intercalate newLine $
         filter (mempty /=)
@@ -279,6 +301,18 @@ constructor con =
     error $ show con
 
 
+gadtDeclaration :: GadtDecl CommentedSrc -> Format
+gadtDeclaration (GadtDecl _ name maybeFields type_) =
+    Format.intercalate " " $
+        filter (mempty /=)
+            [ Atom.name name
+            , "::"
+            , maybe mempty (\fields -> Format.wrap "{ " " }" ", " (map field fields) <> " ->")
+                maybeFields
+            , type' type_
+            ]
+
+
 field :: FieldDecl CommentedSrc -> Format
 field (FieldDecl _ (name:_) type_) =
     Atom.name name <> " :: " <> type' type_
@@ -352,7 +386,6 @@ expression (RecConstr src qname fields)
                 Format.wrap "{ " (newLine <> "}") (newLine <> ", ")
                     (map fieldUpdate fields)
             ]
-
 expression (RecUpdate src expr fields)
     | takesOneLine src =
         Format.intercalate " "
