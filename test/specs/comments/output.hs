@@ -11,8 +11,7 @@ type A = B
 
 
 
--- | B
--- TODO
+-- B
 
 
 type B = C

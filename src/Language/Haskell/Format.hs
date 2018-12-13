@@ -19,7 +19,9 @@ file filepath = do
                 tryFormat <-
                     Exception.try
                         (Exception.evaluate $
-                            DeepSeq.force $ Format.toString $ Module.format (associateHaddock ast)
+                            DeepSeq.force $
+                                Format.toString $
+                                    Module.format (associateHaddock (preserveComments ast))
                         )
 
                 case tryFormat of
@@ -31,3 +33,14 @@ file filepath = do
 
         ParseFailed _ err ->
             return $ Left err
+
+
+preserveComments :: ( a, [Comment] ) -> ( a, [Comment] )
+preserveComments ( a, comments ) =
+    ( a
+    , map
+        (\(Comment multiline src comment) ->
+            Comment multiline src ('|' : comment)
+        )
+        comments
+    )

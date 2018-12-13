@@ -43,7 +43,12 @@ format decl =
 
 comment :: Comment -> Format
 comment (Comment _ _ c) =
-    "--" <> Format.fromString c
+    case c of
+        [] ->
+            "--"
+
+        _:text ->
+            "--" <> Format.fromString text
 
 
 format_ :: Decl CommentedSrc -> Format
