@@ -24,7 +24,7 @@ format args =
 
                 if isDirectory then
                     do
-                        haskellFiles <- findHaskellFiles path
+                        haskellFiles <- List.sort <$> findHaskellFiles path
                         confirmation <- askForConfirmation haskellFiles
 
                         if confirmation then
@@ -72,7 +72,7 @@ findHaskellFiles path = do
 askForConfirmation :: [FilePath] -> IO Bool
 askForConfirmation files = do
     putStrLn "This will format and overwrite the following files:"
-    mapM_ (putStrLn . ("    " ++)) files
+    mapM_ (putStrLn . ("     " ++)) files
     putStr "Are you sure? [y/N] "
     IO.hFlush IO.stdout
     confirmation <- getLine
@@ -85,9 +85,9 @@ formatAndOverwriteFile file = do
 
     case tryFormat of
         Left _ ->
-            putStrLn $ "    " ++ file ++ " ERROR"
+            putStrLn $ "  ✕  " ++ file
 
         Right format ->
             do
                 writeFile file format
-                putStrLn $ "    " ++ file ++ " OK"
+                putStrLn $ "  ✓  " ++ file
