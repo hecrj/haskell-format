@@ -61,6 +61,24 @@ operations n =
         ]
 
 
+comprehension :: Eq n => n -> n -> [n]
+comprehension a b =
+    [ a | a == b ]
+
+
+comprehension2 :: [[( Int, Int )]]
+comprehension2 =
+    [ [ ( i, j ) | i <- [ 1, 2 ] ] | j <- [1..] ]
+
+
+comprehension3 :: [[( Int, Int )]]
+comprehension3 =
+    [
+        [ ( i, j ) | i <- [ 1, 2 ] ]
+        | j <- [1..]
+    ]
+
+
 main :: IO ()
 main =
     print someList

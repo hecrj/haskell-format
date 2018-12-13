@@ -307,7 +307,9 @@ gadtDeclaration (GadtDecl _ name maybeFields type_) =
         filter (mempty /=)
             [ Atom.name name
             , "::"
-            , maybe mempty (\fields -> Format.wrap "{ " " }" ", " (map field fields) <> " ->")
+            , maybe
+                mempty
+                (\fields -> Format.wrap "{ " " }" ", " (map field fields) <> " ->")
                 maybeFields
             , type' type_
             ]
@@ -368,6 +370,25 @@ expression (List src elements)
         Format.wrap "[ " " ]" ", " (map expression elements)
     | otherwise =
         Format.wrap "[ " (newLine <> "]") (newLine <> ", ") (map listOrTupleElement elements)
+expression (ListComp src expr qualStmts)
+    | takesOneLine src =
+        Format.intercalate " "
+            [ "["
+            , expression expr
+            , "|"
+            , Format.intercalate ", " (map qualStatement qualStmts)
+            , "]"
+            ]
+    | otherwise =
+        Format.intercalate newLine
+            [ "["
+            , Format.indent (expression expr)
+            , Format.indent $
+                "| " <> Format.intercalate (newLine <> ", ") (map qualStatement qualStmts)
+            , "]"
+            ]
+expression (EnumFrom _ expr) =
+    "[" <> expression expr <> "..]"
 expression (Tuple src _ elements)
     | takesOneLine src =
         Format.wrap "( " " )" ", " (map expression elements)
@@ -528,6 +549,16 @@ statement (LetStmt _ binds_) =
     "let" <> newLine <> Format.indent (binds binds_)
 statement s =
     error $ show s
+
+
+qualStatement :: QualStmt CommentedSrc -> Format
+qualStatement qualStmt =
+    case qualStmt of
+        QualStmt _ stmt ->
+            statement stmt
+
+        _ ->
+            error (show qualStmt)
 
 
 alt :: Alt CommentedSrc -> Format
