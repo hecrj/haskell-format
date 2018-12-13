@@ -14,7 +14,7 @@ format :: Pat CommentedSrc -> Format
 format (PVar _ name@(Ident _ _)) =
     Atom.name name
 format (PVar _ name@(Symbol _ _)) =
-    "(" <> Atom.name name <> ")"
+    Atom.name name
 format (PWildCard _) =
     "_"
 format (PLit _ (Signless _) lit) =
@@ -24,7 +24,7 @@ format (PLit _ (Negative _) lit) =
 format (PParen _ pattern_) =
     mconcat [ "(", format pattern_, ")" ]
 format (PInfixApp _ left qname right) =
-    mconcat [ format left, Atom.qname qname, format right ]
+    Format.intercalate " " [ format left, Atom.qname qname, format right ]
 format (PList _ patterns) =
     case patterns of
         [] ->
@@ -43,11 +43,8 @@ format (PRec src qname fieldPatterns)
                 (Format.wrap "{ " (newLine <> "}") (newLine <> ", ")
                     (map fieldPattern fieldPatterns)
                 )
-format (PApp _ qname patterns)
-    | Atom.isSymbol qname =
-        Format.intercalate " " ("(" <> Atom.qname qname <> ")" : map format patterns)
-    | otherwise =
-        Format.intercalate " " (Atom.qname qname : map format patterns)
+format (PApp _ qname patterns) =
+    Format.intercalate " " (Atom.qname qname : map format patterns)
 format (PAsPat _ name pattern_) =
     Atom.name name <> "@" <> format pattern_
 format p =

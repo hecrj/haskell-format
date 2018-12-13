@@ -13,3 +13,6 @@ main = getArgs >>= format
 test :: Maybe A -> ()
 test m@(Just {x,y}) = ()
 test Nothing = ()
+
+test2 :: () -> ()
+test2 () = ()

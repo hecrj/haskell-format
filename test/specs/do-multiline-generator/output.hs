@@ -14,7 +14,7 @@ main = do
 
 test :: IO ()
 test = do
-    (first:_) <-
+    (first : _) <-
         map toUpper
             <$> getLine
 

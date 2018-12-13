@@ -21,7 +21,7 @@ file filepath = do
                         (Exception.evaluate $
                             DeepSeq.force $
                                 Format.toString $
-                                    Module.format (associateHaddock (preserveComments ast))
+                                    Module.format (associateHaddock ast)
                         )
 
                 case tryFormat of
@@ -33,14 +33,3 @@ file filepath = do
 
         ParseFailed _ err ->
             return $ Left err
-
-
-preserveComments :: ( a, [Comment] ) -> ( a, [Comment] )
-preserveComments ( a, comments ) =
-    ( a
-    , map
-        (\(Comment multiline src comment) ->
-            Comment multiline src ('|' : comment)
-        )
-        comments
-    )

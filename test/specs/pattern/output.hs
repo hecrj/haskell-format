@@ -9,7 +9,7 @@ main :: IO ()
 main =
     getArgs >>= format
     where
-        format (file:_) =
+        format (file : _) =
             Format.file file >>= putStrLn
         format [] =
             error "no file provided"
@@ -19,4 +19,9 @@ test :: Maybe A -> ()
 test m@(Just{ x, y }) =
     ()
 test Nothing =
+    ()
+
+
+test2 :: () -> ()
+test2 () =
     ()

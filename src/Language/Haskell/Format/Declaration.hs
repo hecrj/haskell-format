@@ -43,12 +43,7 @@ format decl =
 
 comment :: Comment -> Format
 comment (Comment _ _ c) =
-    case c of
-        [] ->
-            "--"
-
-        _:text ->
-            "--" <> Format.fromString text
+    "--" <> Format.fromString c
 
 
 format_ :: Decl CommentedSrc -> Format
@@ -91,7 +86,7 @@ format_ (DataDecl _ dataOrNew _ head_ qualCons derivings) =
                     <> Format.intercalate (newLine <> "| ")
                         (map qualifiedConstructor qualCons)
             , case derivings of
-                first:_ ->
+                first : _ ->
                     Format.indent $ "deriving " <> deriving_ first
 
                 _ ->
@@ -113,7 +108,7 @@ format_ (GDataDecl _ dataOrNew _ head_ _ gadtDeclarations derivings) =
                 Format.intercalate (newLine <> newLine)
                     (map gadtDeclaration gadtDeclarations)
             , case derivings of
-                first:_ ->
+                first : _ ->
                     Format.indent $ "deriving " <> deriving_ first
 
                 _ ->
@@ -230,7 +225,7 @@ rhsInlined :: Rhs CommentedSrc -> Format
 rhsInlined (UnGuardedRhs _ expr) =
     " "
         <> (case expr of
-            Do _ (_:_:_) ->
+            Do _ (_ : _ : _) ->
                 Format.intercalate " "
                     [ "="
                     , expression expr
@@ -321,7 +316,7 @@ gadtDeclaration (GadtDecl _ name maybeFields type_) =
 
 
 field :: FieldDecl CommentedSrc -> Format
-field (FieldDecl _ (name:_) type_) =
+field (FieldDecl _ (name : _) type_) =
     Atom.name name <> " :: " <> type' type_
 field f =
     error $ show f
@@ -401,10 +396,8 @@ expression (Tuple src _ elements)
         Format.wrap "( " (newLine <> ")") (newLine <> ", ") (map listOrTupleElement elements)
 expression (RecConstr src qname fields)
     | takesOneLine src =
-        Format.intercalate " "
-            [ Atom.qname qname
-            , Format.wrap "{ " " }" ", " (map fieldUpdate fields)
-            ]
+        Atom.qname qname
+            <> Format.wrap "{ " " }" ", " (map fieldUpdate fields)
     | otherwise =
         Format.intercalate newLine
             [ Atom.qname qname
@@ -438,7 +431,7 @@ expression (InfixApp src left qop right)
         case qop of
             QVarOp _ (UnQual _ (Symbol _ "$")) ->
                 case right of
-                    Do _ (_:_:_) ->
+                    Do _ (_ : _ : _) ->
                         expression left <> " " <> Atom.qop qop <> " " <> expression right
 
                     _ ->
@@ -518,12 +511,20 @@ expression (Let _ binds_ expr) =
             , "in"
             , Format.indent (expression expr)
             ]
-expression (Lambda src patterns expr)
-    | takesOneLine src =
-        "\\" <> Format.intercalate " " (map Pattern.format patterns) <> " -> " <> expression expr
-    | otherwise =
-        "\\" <> Format.intercalate " " (map Pattern.format patterns) <> " ->" <> newLine
-            <> Format.indent (expression expr)
+expression (Lambda src patterns expr) =
+    "\\" <> Format.intercalate " " (map Pattern.format patterns) <> " ->" <> body
+    where
+        body =
+            if takesOneLine src then
+                " " <> expression expr
+
+            else
+                case expr of
+                    Do _ (_ : _ : _) ->
+                        " " <> expression expr
+
+                    _ ->
+                        newLine <> Format.indent (expression expr)
 expression (RightSection _ qop expr) =
     "(" <> Atom.qop qop <> " " <> expression expr <> ")"
 expression (LeftSection _ expr qop) =
@@ -570,10 +571,15 @@ alt :: Alt CommentedSrc -> Format
 alt (Alt _ pat_ (UnGuardedRhs _ expr) _) =
     Format.intercalate " "
         [ Pattern.format pat_
-        , Format.intercalate newLine
-            [ "->"
-            , Format.indent (expression expr)
-            ]
+        , case expr of
+            Do _ (_ : _ : _) ->
+                "-> " <> expression expr
+
+            _ ->
+                Format.intercalate newLine
+                    [ "->"
+                    , Format.indent (expression expr)
+                    ]
         ]
 alt (Alt _ pat (GuardedRhss _ rhss) _) =
     Format.intercalate (newLine <> newLine) (map guardedRhs rhss)
@@ -641,7 +647,7 @@ listOrTupleElement expr =
     where
         alignTail target =
             case Format.lines target of
-                x:xs ->
+                x : xs ->
                     Format.intercalate newLine (x : map ("  " <>) xs)
 
                 _ ->
