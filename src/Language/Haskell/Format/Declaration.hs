@@ -352,6 +352,20 @@ expression (RecConstr src qname fields)
                 Format.wrap "{ " (newLine <> "}") (newLine <> ", ")
                     (map fieldUpdate fields)
             ]
+
+expression (RecUpdate src expr fields)
+    | takesOneLine src =
+        Format.intercalate " "
+            [ expression expr
+            , Format.wrap "{ " " }" ", " (map fieldUpdate fields)
+            ]
+    | otherwise =
+        Format.intercalate newLine
+            [ expression expr
+            , Format.indent $
+                Format.wrap "{ " (newLine <> "}") (newLine <> ", ")
+                    (map fieldUpdate fields)
+            ]
 expression (NegApp _ expr) =
     "-" <> expression expr
 expression (InfixApp src left qop right)
@@ -460,6 +474,8 @@ expression (Paren _ expr)
         "(" <> expression expr <> ")"
     | otherwise =
         "(" <> expression expr <> newLine <> ")"
+expression (ExpTypeSig _ expr type_) =
+    expression expr <> " :: " <> type' type_
 expression e =
     error (show e)
 

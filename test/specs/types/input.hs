@@ -21,8 +21,9 @@ build =
   F { c = "c"
     , d = "d" }
 
-test :: Num n => n -> ()
-test _ = ()
+test :: Num n => n -> F
+test _ =
+  build { c = "C", d = "D" } :: F
 
 class (Num r, Ord r) => Repository r where
   create :: r -> String -> Int -> IO ()

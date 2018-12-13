@@ -38,9 +38,9 @@ build =
         }
 
 
-test :: Num n => n -> ()
+test :: Num n => n -> F
 test _ =
-    ()
+    build { c = "C", d = "D" } :: F
 
 
 class (Num r, Ord r) => Repository r where
