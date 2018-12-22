@@ -605,8 +605,13 @@ alt (Alt _ pat (GuardedRhss _ rhss) _) =
 fieldUpdate :: FieldUpdate CommentedSrc -> Format
 fieldUpdate field =
     case field of
-        FieldUpdate _ qname expr ->
-            Atom.qname qname <> " = " <> expression expr
+        FieldUpdate src qname expr ->
+            if takesOneLine src then
+                Atom.qname qname <> " = " <> expression expr
+
+            else
+                Atom.qname qname <> " =" <> newLine
+                    <> Format.indent (expression expr)
 
         FieldPun _ qname ->
             Atom.qname qname

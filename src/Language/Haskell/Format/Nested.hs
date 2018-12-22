@@ -49,7 +49,7 @@ nest :: Format -> Format -> Format
 nest anchor target =
     Format.intercalate newLine (firstLine : paddedLines)
     where
-        (x1:xs) =
+        (x1 : xs) =
             Format.lines target
 
         firstLine =

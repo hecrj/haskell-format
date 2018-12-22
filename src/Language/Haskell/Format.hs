@@ -14,22 +14,21 @@ file filepath = do
     result <- parseFileWithComments defaultParseMode filepath
 
     case result of
-        ParseOk ast ->
-            do
-                tryFormat <-
-                    Exception.try
-                        (Exception.evaluate $
-                            DeepSeq.force $
-                                Format.toString $
-                                    Module.format (associateHaddock ast)
-                        )
+        ParseOk ast -> do
+            tryFormat <-
+                Exception.try
+                    (Exception.evaluate $
+                        DeepSeq.force $
+                            Format.toString $
+                                Module.format (associateHaddock ast)
+                    )
 
-                case tryFormat of
-                    Left err@(Exception.ErrorCallWithLocation _ _) ->
-                        return $ Left (show err)
+            case tryFormat of
+                Left err@(Exception.ErrorCallWithLocation _ _) ->
+                    return $ Left (show err)
 
-                    Right format ->
-                        return $ Right format
+                Right format ->
+                    return $ Right format
 
         ParseFailed _ err ->
             return $ Left err
