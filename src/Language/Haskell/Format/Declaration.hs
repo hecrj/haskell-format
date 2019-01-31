@@ -395,6 +395,8 @@ expression (ListComp src expr qualStmts)
             ]
 expression (EnumFrom _ expr) =
     "[" <> expression expr <> "..]"
+expression (EnumFromTo _ e1 e2) =
+    "[" <> expression e1 <> ".." <> expression e2 <> "]"
 expression (Tuple src _ elements)
     | takesOneLine src =
         Format.wrap "( " " )" ", " (map expression elements)
@@ -515,7 +517,7 @@ expression (Let _ binds_ expr) =
         <> Format.intercalate newLine
             [ Format.indent (binds binds_)
             , "in"
-            , Format.indent (expression expr)
+            , expression expr
             ]
 expression (Lambda src patterns expr) =
     "\\" <> Format.intercalate " " (map Pattern.format patterns) <> " ->" <> body

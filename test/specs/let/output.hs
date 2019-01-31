@@ -24,4 +24,4 @@ create2 name =
         events =
             [ Created customer ]
     in
-        return ( customer, events )
+    return ( customer, events )
