@@ -648,12 +648,12 @@ listOrTupleElement expr =
                             ifThen_ ->
                                 ifThen_
                 in
-                    Format.intercalate newLine $
-                        alignedIfThen
-                            ++ [ Format.indent (expression then_)
-                               , newLine <> "  else"
-                               , Format.indent (expression else_)
-                               ]
+                Format.intercalate newLine $
+                    alignedIfThen
+                        ++ [ Format.indent (expression then_)
+                           , newLine <> "  else"
+                           , Format.indent (expression else_)
+                           ]
 
         _ ->
             expression expr
@@ -661,10 +661,18 @@ listOrTupleElement expr =
         alignTail target =
             case Format.lines target of
                 x : xs ->
-                    Format.intercalate newLine (x : map ("  " <>) xs)
+                    Format.intercalate newLine (x : map alignUnlessEmpty xs)
 
                 _ ->
                     target
+
+        alignUnlessEmpty line =
+            case line of
+                "" ->
+                    ""
+
+                _ ->
+                    "  " <> line
 
 
 ifThen :: Exp CommentedSrc -> [Format]
