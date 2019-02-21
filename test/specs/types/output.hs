@@ -61,7 +61,7 @@ class (Num r, Ord r) => Repository r where
     read :: String -> IO (Maybe Int)
 
 
-instance Repository (Dict String Int) where
+instance Num a => Repository (Dict String Int) where
     type X = Y
 
     create dict string int =

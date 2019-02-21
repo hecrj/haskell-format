@@ -339,8 +339,12 @@ deriving_ (Deriving _ _ instanceRules) =
 
 
 instanceRule :: InstRule CommentedSrc -> Format
-instanceRule (IRule _ _ _ instanceHead_) =
-    instanceHead instanceHead_
+instanceRule (IRule _ _ maybeContext instanceHead_) =
+    Format.intercalate " " $
+        filter (mempty /=)
+            [ maybe mempty context maybeContext
+            , instanceHead instanceHead_
+            ]
 instanceRule (IParen _ rule) =
     instanceRule rule
 
