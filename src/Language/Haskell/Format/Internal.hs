@@ -12,7 +12,6 @@ module Language.Haskell.Format.Internal
     , (<>)
     ) where
 
-import Data.Monoid ((<>))
 import Data.Text.Lazy.Builder as Builder
 import Prelude hiding (lines)
 import qualified Data.List as List

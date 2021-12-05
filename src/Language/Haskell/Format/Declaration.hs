@@ -308,7 +308,7 @@ constructor con =
 
 
 gadtDeclaration :: GadtDecl CommentedSrc -> Format
-gadtDeclaration (GadtDecl _ name maybeFields type_) =
+gadtDeclaration (GadtDecl _ name _ _ maybeFields type_) =
     Format.intercalate " " $
         filter (mempty /=)
             [ Atom.name name
@@ -706,8 +706,8 @@ context ctx =
 assertion :: Asst CommentedSrc -> Format
 assertion asst =
     case asst of
-        ClassA _ qname types ->
-            Format.intercalate " " (Atom.qname qname : map type' types)
+        TypeA _ type_ ->
+            type' type_
 
         ParenA _ parenAsst ->
             "(" <> assertion parenAsst <> ")"
